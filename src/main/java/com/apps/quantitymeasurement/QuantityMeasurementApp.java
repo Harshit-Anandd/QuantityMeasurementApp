@@ -34,6 +34,7 @@ public class QuantityMeasurementApp {
 
 	public static final class QuantityLength {
 
+		private static final double EPSILON = 0.0001;
 		private final double value;
 		private final LengthUnit unit;
 
@@ -59,8 +60,12 @@ public class QuantityMeasurementApp {
 
 		/*
 		 * Overrides equals() method to compare two QuantityLength objects.
-		 *  Convert both measurements to base unit (inches)
-		 *  Compare using Double.compare()
+		 *
+		 * Compares two QuantityLength objects by:
+		 *  - Converting both values to base unit (inches)
+		 *  - Performing tolerance-based comparison using EPSILON
+		 *
+		 * Prevents floating-point precision issues during unit conversion.
 		 */
 		@Override
 		public boolean equals(Object obj) {
@@ -73,7 +78,11 @@ public class QuantityMeasurementApp {
 
 			QuantityLength other = (QuantityLength) obj;
 
-			return Double.compare(this.toBaseUnit(), other.toBaseUnit()) == 0;
+			double difference = Math.abs(
+					this.toBaseUnit() - other.toBaseUnit()
+					);
+
+			return difference < EPSILON;
 		}
 
 		/*
@@ -81,7 +90,7 @@ public class QuantityMeasurementApp {
 		 */
 		@Override
 		public int hashCode() {
-			return Objects.hash(toBaseUnit());
+			return Objects.hash(Math.round(toBaseUnit() / EPSILON));
 		}
 
 		@Override
