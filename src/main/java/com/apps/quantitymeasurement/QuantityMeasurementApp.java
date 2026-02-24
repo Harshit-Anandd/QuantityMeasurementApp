@@ -1,8 +1,8 @@
 /**
- * QuantityMeasurementApp - UC4: Extended Unit Support
+ * QuantityMeasurementApp - UC5: Unit-to-Unit Conversion
  *
- * Extend UC3 generic measurement implementation to support additional units
- * without duplicating code (DRY principle).
+ * Introduces static unit-to-unit conversion functionality on top of
+ * the UC4 extended unit support implementation.
  *
  */
 package com.apps.quantitymeasurement;
