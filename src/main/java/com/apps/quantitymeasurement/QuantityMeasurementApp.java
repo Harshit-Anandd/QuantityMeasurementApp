@@ -1,8 +1,8 @@
 /**
- * QuantityMeasurementApp - UC5: Unit-to-Unit Conversion
+ * QuantityMeasurementApp - UC6: Addition of Two Length Units
  *
- * Introduces static unit-to-unit conversion functionality on top of
- * the UC4 extended unit support implementation.
+ * Extends UC5 conversion functionality to support addition of two
+ * QuantityLength objects.
  *
  */
 package com.apps.quantitymeasurement;
@@ -12,133 +12,203 @@ import java.util.Scanner;
 
 public class QuantityMeasurementApp {
 
-	// ENUM: LengthUnit: Stores conversion factor relative to base unit (inches).
 	private static final double EPSILON = 0.0001;
 
+	// ENUM: LengthUnit: Stores conversion factor relative to base unit (inches).
 	public enum LengthUnit {
+        FEET(12),
+        INCH(1),
+        YARD(36),
+        CENTIMETER(0.393701);
 
-		FEET(12),
-		INCH(1),
-		YARD(36),
-		CENTIMETER(0.393701);
+        private final double toBaseFactor;
 
-		private final double toBaseFactor;
+        LengthUnit(double toBaseFactor) {
+            this.toBaseFactor = toBaseFactor;
+        }
 
-		LengthUnit(double toBaseFactor) {
-			this.toBaseFactor = toBaseFactor;
-		}
+        public double toBase(double value) {
+            return value * toBaseFactor;
+        }
 
-		public double toBase(double value) {
-			return value * toBaseFactor;
-		}
+        public double fromBase(double baseValue) {
+            return baseValue / toBaseFactor;
+        }
+    }
 
-		public double fromBase(double baseValue) {
-			return baseValue / toBaseFactor;
-		}
-	}
-
-	/*
-	 * Static conversion method as preferred in UC5 documentation.
-	 */
-	public static double convert(
-			double value,
-			LengthUnit source,
-			LengthUnit target) {
-
-		if (!Double.isFinite(value))
-			throw new IllegalArgumentException("Value must be finite.");
-
-		if (source == null || target == null)
-			throw new IllegalArgumentException("Units cannot be null.");
-
-		double baseValue = source.toBase(value);
-		return target.fromBase(baseValue);
-	}
-
-	/*
-	 * Equality-based Quantity class retained from UC4
-	 */
 	public static final class QuantityLength {
 
-		private final double value;
-		private final LengthUnit unit;
+        private final double value;
+        private final LengthUnit unit;
 
-		public QuantityLength(double value, LengthUnit unit) {
-			if (unit == null)
-				throw new IllegalArgumentException("Unit cannot be null.");
+        public QuantityLength(double value, LengthUnit unit) {
 
-			this.value = value;
-			this.unit = unit;
-		}
+            if (!Double.isFinite(value))
+                throw new IllegalArgumentException("Value must be finite.");
 
-		private double toBaseUnit() {
-			return unit.toBase(value);
-		}
+            if (unit == null)
+                throw new IllegalArgumentException("Unit cannot be null.");
 
-		@Override
-		public boolean equals(Object obj) {
+            this.value = value;
+            this.unit = unit;
+        }
 
-			if (this == obj)
-				return true;
+        private double toBaseUnit() {
+            return unit.toBase(value);
+        }
 
-			if (obj == null || getClass() != obj.getClass())
-				return false;
+        public double getValue() {
+            return value;
+        }
 
-			QuantityLength other = (QuantityLength) obj;
+        public LengthUnit getUnit() {
+            return unit;
+        }
 
-			return Math.abs(
-					this.toBaseUnit() - other.toBaseUnit()
-					) < EPSILON;
-		}
+        public static QuantityLength add(
+                QuantityLength first,
+                QuantityLength second) {
 
-		@Override
-		public int hashCode() {
-			return Objects.hash(
-					Math.round(toBaseUnit() / EPSILON)
-					);
-		}
-	}
+            if (first == null || second == null)
+                throw new IllegalArgumentException("Operands cannot be null.");
 
-	private static LengthUnit parseUnit(String input) {
+            return add(first, second, first.unit);
+        }
 
-		if (input.equalsIgnoreCase("feet"))
-			return LengthUnit.FEET;
+        public static QuantityLength add(
+                QuantityLength first,
+                QuantityLength second,
+                LengthUnit resultUnit) {
 
-		if (input.equalsIgnoreCase("inch") ||
-				input.equalsIgnoreCase("inches"))
-			return LengthUnit.INCH;
+            if (first == null || second == null || resultUnit == null)
+                throw new IllegalArgumentException("Operands cannot be null.");
 
-		if (input.equalsIgnoreCase("yard") ||
-				input.equalsIgnoreCase("yards"))
-			return LengthUnit.YARD;
+            double sumBase =
+                    first.toBaseUnit() + second.toBaseUnit();
 
-		if (input.equalsIgnoreCase("cm") ||
-				input.equalsIgnoreCase("centimeter") ||
-				input.equalsIgnoreCase("centimeters"))
-			return LengthUnit.CENTIMETER;
+            double resultValue =
+                    resultUnit.fromBase(sumBase);
 
-		throw new IllegalArgumentException("Invalid unit type.");
-	}
+            return new QuantityLength(resultValue, resultUnit);
+        }
 
-	public static void main(String[] args) {
+        public static QuantityLength add(
+                double v1, LengthUnit u1,
+                double v2, LengthUnit u2,
+                LengthUnit resultUnit) {
 
-		try (Scanner sc = new Scanner(System.in)) {
+            QuantityLength q1 =
+                    new QuantityLength(v1, u1);
 
-			System.out.println("Enter value to convert:");
-			double value = Double.parseDouble(sc.nextLine());
+            QuantityLength q2 =
+                    new QuantityLength(v2, u2);
 
-			System.out.println("Enter source unit (feet/inches/yards/cm):");
-			LengthUnit source = parseUnit(sc.nextLine());
+            return add(q1, q2, resultUnit);
+        }
 
-			System.out.println("Enter target unit (feet/inches/yards/cm):");
-			LengthUnit target = parseUnit(sc.nextLine());
+        @Override
+        public boolean equals(Object obj) {
 
-			double result = convert(value, source, target);
+            if (this == obj) return true;
+            if (obj == null || getClass() != obj.getClass()) return false;
 
-			System.out.println("Converted Value: " + result);
+            QuantityLength other = (QuantityLength) obj;
 
-		} catch (Exception e) {
-			System.err.println(e.getMessage());
-		}
-	}
+            return Math.abs(
+                    this.toBaseUnit() - other.toBaseUnit()
+            ) < EPSILON;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(
+                    Math.round(toBaseUnit() / EPSILON)
+            );
+        }
+
+        @Override
+        public String toString() {
+            return value + " " + unit;
+        }
+    }
+
+    public static void main(String[] args) {
+
+        Scanner sc = new Scanner(System.in);
+
+        System.out.println("Select Operation:");
+        System.out.println("1. Add using objects");
+        System.out.println("2. Add with result unit");
+        System.out.println("3. Add using raw values");
+
+        int choice = Integer.parseInt(sc.nextLine());
+
+        try {
+
+            switch (choice) {
+
+                case 1 -> {
+                    QuantityLength q1 = readQuantity(sc);
+                    QuantityLength q2 = readQuantity(sc);
+                    System.out.println(
+                            QuantityLength.add(q1, q2));
+                }
+
+                case 2 -> {
+                    QuantityLength q1 = readQuantity(sc);
+                    QuantityLength q2 = readQuantity(sc);
+                    LengthUnit resultUnit =
+                            readUnit(sc, "Result Unit:");
+                    System.out.println(
+                            QuantityLength.add(q1, q2, resultUnit));
+                }
+
+                case 3 -> {
+                    System.out.println("Value1:");
+                    double v1 = Double.parseDouble(sc.nextLine());
+                    LengthUnit u1 =
+                            readUnit(sc, "Unit1:");
+
+                    System.out.println("Value2:");
+                    double v2 = Double.parseDouble(sc.nextLine());
+                    LengthUnit u2 =
+                            readUnit(sc, "Unit2:");
+
+                    LengthUnit resultUnit =
+                            readUnit(sc, "Result Unit:");
+
+                    System.out.println(
+                            QuantityLength.add(v1, u1, v2, u2, resultUnit));
+                }
+
+                default -> System.out.println("Invalid choice.");
+            }
+
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+        }
+
+        sc.close();
+    }
+
+    private static QuantityLength readQuantity(Scanner sc) {
+        System.out.println("Value:");
+        double value = Double.parseDouble(sc.nextLine());
+        LengthUnit unit = readUnit(sc, "Unit:");
+        return new QuantityLength(value, unit);
+    }
+
+    private static LengthUnit readUnit(Scanner sc, String msg) {
+        System.out.println(msg + " (feet/inch/yard/cm)");
+        String input = sc.nextLine();
+
+        return switch (input.toLowerCase()) {
+            case "feet" -> LengthUnit.FEET;
+            case "inch", "inches" -> LengthUnit.INCH;
+            case "yard", "yards" -> LengthUnit.YARD;
+            case "cm", "centimeter", "centimeters" ->
+                    LengthUnit.CENTIMETER;
+            default -> throw new IllegalArgumentException("Invalid unit.");
+        };
+    }
 }
