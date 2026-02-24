@@ -13,6 +13,8 @@ import java.util.Scanner;
 public class QuantityMeasurementApp {
 
 	// ENUM: LengthUnit: Stores conversion factor relative to base unit (inches).
+	private static final double EPSILON = 0.0001;
+
 	public enum LengthUnit {
 
 		FEET(12),
@@ -26,47 +28,53 @@ public class QuantityMeasurementApp {
 			this.toBaseFactor = toBaseFactor;
 		}
 
-		// Converts given value into base unit (inches).
 		public double toBase(double value) {
 			return value * toBaseFactor;
 		}
+
+		public double fromBase(double baseValue) {
+			return baseValue / toBaseFactor;
+		}
 	}
 
+	/*
+	 * Static conversion method as preferred in UC5 documentation.
+	 */
+	public static double convert(
+			double value,
+			LengthUnit source,
+			LengthUnit target) {
+
+		if (!Double.isFinite(value))
+			throw new IllegalArgumentException("Value must be finite.");
+
+		if (source == null || target == null)
+			throw new IllegalArgumentException("Units cannot be null.");
+
+		double baseValue = source.toBase(value);
+		return target.fromBase(baseValue);
+	}
+
+	/*
+	 * Equality-based Quantity class retained from UC4
+	 */
 	public static final class QuantityLength {
 
-		private static final double EPSILON = 0.0001;
 		private final double value;
 		private final LengthUnit unit;
 
-		/*
-		 * Constructor validates that unit is not null.
-		 */
 		public QuantityLength(double value, LengthUnit unit) {
-
-			if (unit == null) {
+			if (unit == null)
 				throw new IllegalArgumentException("Unit cannot be null.");
-			}
 
 			this.value = value;
 			this.unit = unit;
 		}
 
-		/*
-		 * Converts current measurement to base unit (inches).
-		 */
 		private double toBaseUnit() {
 			return unit.toBase(value);
 		}
 
-		/*
-		 * Overrides equals() method to compare two QuantityLength objects.
-		 *
-		 * Compares two QuantityLength objects by:
-		 *  - Converting both values to base unit (inches)
-		 *  - Performing tolerance-based comparison using EPSILON
-		 *
-		 * Prevents floating-point precision issues during unit conversion.
-		 */
 		@Override
 		public boolean equals(Object obj) {
 
@@ -78,24 +86,16 @@ public class QuantityMeasurementApp {
 
 			QuantityLength other = (QuantityLength) obj;
 
-			double difference = Math.abs(
+			return Math.abs(
 					this.toBaseUnit() - other.toBaseUnit()
-					);
-
-			return difference < EPSILON;
+					) < EPSILON;
 		}
 
-		/*
-		 * hashCode overridden to maintain consistency with equals().
-		 */
 		@Override
 		public int hashCode() {
-			return Objects.hash(Math.round(toBaseUnit() / EPSILON));
-		}
-
-		@Override
-		public String toString() {
-			return value + " " + unit;
+			return Objects.hash(
+					Math.round(toBaseUnit() / EPSILON)
+					);
 		}
 	}
 
@@ -117,40 +117,27 @@ public class QuantityMeasurementApp {
 				input.equalsIgnoreCase("centimeters"))
 			return LengthUnit.CENTIMETER;
 
-		throw new IllegalArgumentException("Invalid unit type entered.");
+		throw new IllegalArgumentException("Invalid unit type.");
 	}
 
 	public static void main(String[] args) {
 
 		try (Scanner sc = new Scanner(System.in)) {
 
-			// First Measurement
-			System.out.println("Enter first value:");
-			double value1 = Double.parseDouble(sc.nextLine());
+			System.out.println("Enter value to convert:");
+			double value = Double.parseDouble(sc.nextLine());
 
-			System.out.println("Enter first unit (feet/inches/yards/cm):");
-			LengthUnit unit1 = parseUnit(sc.nextLine());
+			System.out.println("Enter source unit (feet/inches/yards/cm):");
+			LengthUnit source = parseUnit(sc.nextLine());
 
-			// Second Measurement
-			System.out.println("Enter second value:");
-			double value2 = Double.parseDouble(sc.nextLine());
+			System.out.println("Enter target unit (feet/inches/yards/cm):");
+			LengthUnit target = parseUnit(sc.nextLine());
 
-			System.out.println("Enter second unit (feet/inches/yards/cm):");
-			LengthUnit unit2 = parseUnit(sc.nextLine());
+			double result = convert(value, source, target);
 
-			QuantityLength measurement1 =
-					new QuantityLength(value1, unit1);
+			System.out.println("Converted Value: " + result);
 
-			QuantityLength measurement2 =
-					new QuantityLength(value2, unit2);
-
-			boolean result = measurement1.equals(measurement2);
-
-			System.out.println("Are the two measurements equal? " + result);
-
-		} catch (NumberFormatException e) {
-			System.err.println("Invalid numeric value entered.");
-		} catch (IllegalArgumentException e) {
+		} catch (Exception e) {
 			System.err.println(e.getMessage());
 		}
 	}
