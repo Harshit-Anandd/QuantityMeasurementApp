@@ -7,83 +7,92 @@ import com.apps.quantitymeasurement.QuantityMeasurementApp;
 
 public class QuantityMeasurementAppTest {
 	@Test
-    void testEquality_SameValue() {
-        QuantityMeasurementApp.Feet a = new QuantityMeasurementApp.Feet(1.0);
-        QuantityMeasurementApp.Feet b = new QuantityMeasurementApp.Feet(1.0);
-        assertTrue(a.equals(b));
-    }
+	void testSameUnitEquality() {
 
-    @Test
-    void testEquality_DifferentValue() {
-    	QuantityMeasurementApp.Feet a = new QuantityMeasurementApp.Feet(1.0);
-    	QuantityMeasurementApp.Feet b = new QuantityMeasurementApp.Feet(2.0);
-        assertFalse(a.equals(b));
-    }
+		QuantityMeasurementApp.QuantityLength firstMeasurement =
+				new QuantityMeasurementApp.QuantityLength(
+						2.0,
+						QuantityMeasurementApp.LengthUnit.FEET
+						);
 
-    @Test
-    void testEquality_NullComparison() {
-    	QuantityMeasurementApp.Feet a = new QuantityMeasurementApp.Feet(1.0);
-        assertFalse(a.equals(null));
-    }
+		QuantityMeasurementApp.QuantityLength secondMeasurement =
+				new QuantityMeasurementApp.QuantityLength(
+						2.0,
+						QuantityMeasurementApp.LengthUnit.FEET
+						);
 
-    @Test
-    void testEquality_SameReference() {
-    	QuantityMeasurementApp.Feet a = new QuantityMeasurementApp.Feet(1.0);
-        assertTrue(a.equals(a));
-    }
+		boolean result = firstMeasurement.equals(secondMeasurement);
 
-    @Test
-    void testEquality_NonNumericInputHandled() {
-        // although input parsing lives in app, equals should not throw for other objects
-    	QuantityMeasurementApp.Feet a = new QuantityMeasurementApp.Feet(1.0);
-        assertFalse(a.equals("not a Feet"));
-    }
-    
-    @Test
-    void testEqualInches() {
-    	QuantityMeasurementApp.Inches firstMeasurement = new QuantityMeasurementApp.Inches(10.0);
-    	QuantityMeasurementApp.Inches secondMeasurement = new QuantityMeasurementApp.Inches(10.0);
+		assertTrue(result);
+	}
 
-        boolean result = firstMeasurement.equals(secondMeasurement);
+	@Test
+	void testCrossUnitEquality() {
 
-        assertTrue(result);
-    }
+		QuantityMeasurementApp.QuantityLength oneFoot =
+				new QuantityMeasurementApp.QuantityLength(
+						1.0,
+						QuantityMeasurementApp.LengthUnit.FEET
+						);
 
-    @Test
-    void testDifferentInches() {
-    	QuantityMeasurementApp.Inches firstMeasurement = new QuantityMeasurementApp.Inches(10.0);
-    	QuantityMeasurementApp.Inches secondMeasurement = new QuantityMeasurementApp.Inches(12.0);
+		QuantityMeasurementApp.QuantityLength twelveInches =
+				new QuantityMeasurementApp.QuantityLength(
+						12.0,
+						QuantityMeasurementApp.LengthUnit.INCH
+						);
 
-        boolean result = firstMeasurement.equals(secondMeasurement);
+		boolean result = oneFoot.equals(twelveInches);
 
-        assertFalse(result);
-    }
+		assertTrue(result);
+	}
 
-    @Test
-    void testNullComparison() {
-    	QuantityMeasurementApp.Inches measurement = new QuantityMeasurementApp.Inches(10.0);
+	@Test
+	void testInequality() {
 
-        boolean result = measurement.equals(null);
+		QuantityMeasurementApp.QuantityLength firstMeasurement =
+				new QuantityMeasurementApp.QuantityLength(
+						1.0,
+						QuantityMeasurementApp.LengthUnit.FEET
+						);
 
-        assertFalse(result);
-    }
+		QuantityMeasurementApp.QuantityLength secondMeasurement =
+				new QuantityMeasurementApp.QuantityLength(
+						2.0,
+						QuantityMeasurementApp.LengthUnit.FEET
+						);
 
-    @Test
-    void testDifferentTypeComparison() {
-    	QuantityMeasurementApp.Inches inchesMeasurement = new QuantityMeasurementApp.Inches(10.0);
-    	QuantityMeasurementApp.Feet feetMeasurement = new QuantityMeasurementApp.Feet(10.0);
+		boolean result = firstMeasurement.equals(secondMeasurement);
 
-        boolean result = inchesMeasurement.equals(feetMeasurement);
+		assertFalse(result);
+	}
 
-        assertFalse(result);
-    }
+	@Test
+	void testNullComparison() {
 
-    @Test
-    void testSameReference() {
-    	QuantityMeasurementApp.Inches measurement = new QuantityMeasurementApp.Inches(7.0);
+		QuantityMeasurementApp.QuantityLength measurement =
+				new QuantityMeasurementApp.QuantityLength(
+						5.0,
+						QuantityMeasurementApp.LengthUnit.INCH
+						);
 
-        boolean result = measurement.equals(measurement);
+		boolean result = measurement.equals(null);
 
-        assertTrue(result);
-    }
+		assertFalse(result);
+	}
+
+	@Test
+	void testDifferentTypeComparison() {
+
+		QuantityMeasurementApp.QuantityLength measurement =
+				new QuantityMeasurementApp.QuantityLength(
+						5.0,
+						QuantityMeasurementApp.LengthUnit.INCH
+						);
+
+		String invalidObject = "Invalid Type";
+
+		boolean result = measurement.equals(invalidObject);
+
+		assertFalse(result);
+	}
 }
