@@ -1,113 +1,187 @@
 /**
- * QuantityMeasurementApp - UC7: Refactor QuantityLength
+ * QuantityMeasurementApp - UC9: Add Weight Measurement Support
  *
- * Refactor the QuantityLength class to delegate unit conversion
- * responsibilities to a standalone LengthUnit enum. 
- *
+ * Extends UC8 by introducing WeightUnit and QuantityWeight
+ * while maintaining strict separation between categories.
  */
 package com.apps.quantitymeasurement;
 
 import java.util.Objects;
-import java.util.Scanner;
 
 public class QuantityMeasurementApp {
 
-	private static final double EPSILON = 0.0001;
+    private static final double EPSILON = 0.0001;
 
-	// ENUM: LengthUnit: Stores conversion factor relative to base unit (inches).
-	public enum LengthUnit {
+    // ===================== LENGTH =====================
 
-		FEET(1.0),
-		INCH(1.0 / 12.0),
-		YARD(3.0),
-		CENTIMETER(1.0 / 30.48);
+    public enum LengthUnit {
 
-		private final double toFeetFactor;
+        FEET(1.0),
+        INCH(1.0 / 12.0),
+        YARD(3.0),
+        CENTIMETER(1.0 / 30.48);
 
-		LengthUnit(double toFeetFactor) {
-			this.toFeetFactor = toFeetFactor;
-		}
+        private final double toFeetFactor;
 
-		public double convertToBaseUnit(double value) {
-			if (!Double.isFinite(value))
-				throw new IllegalArgumentException("Value must be finite.");
-			return value * toFeetFactor;
-		}
+        LengthUnit(double toFeetFactor) {
+            this.toFeetFactor = toFeetFactor;
+        }
 
-		public double convertFromBaseUnit(double baseValue) {
-			if (!Double.isFinite(baseValue))
-				throw new IllegalArgumentException("Value must be finite.");
-			return baseValue / toFeetFactor;
-		}
-	}
+        public double convertToBaseUnit(double value) {
+            if (!Double.isFinite(value))
+                throw new IllegalArgumentException("Value must be finite.");
+            return value * toFeetFactor;
+        }
 
-	public static final class QuantityLength {
+        public double convertFromBaseUnit(double baseValue) {
+            if (!Double.isFinite(baseValue))
+                throw new IllegalArgumentException("Value must be finite.");
+            return baseValue / toFeetFactor;
+        }
+    }
 
-		private final double value;
-		private final LengthUnit unit;
+    public static final class QuantityLength {
 
-		public QuantityLength(double value, LengthUnit unit) {
+        private final double value;
+        private final LengthUnit unit;
 
-			if (!Double.isFinite(value))
-				throw new IllegalArgumentException("Value must be finite.");
+        public QuantityLength(double value, LengthUnit unit) {
 
-			if (unit == null)
-				throw new IllegalArgumentException("Unit cannot be null.");
+            if (!Double.isFinite(value))
+                throw new IllegalArgumentException("Value must be finite.");
 
-			this.value = value;
-			this.unit = unit;
-		}
+            if (unit == null)
+                throw new IllegalArgumentException("Unit cannot be null.");
 
-		public double getValue() {
-			return value;
-		}
+            this.value = value;
+            this.unit = unit;
+        }
 
-		public LengthUnit getUnit() {
-			return unit;
-		}
+        private double toBase() {
+            return unit.convertToBaseUnit(value);
+        }
 
-		private double toBase() {
-			return unit.convertToBaseUnit(value);
-		}
+        public double getValue() { return value; }
 
-		public static QuantityLength add(
-				QuantityLength first,
-				QuantityLength second,
-				LengthUnit targetUnit) {
+        public LengthUnit getUnit() { return unit; }
 
-			if (first == null || second == null)
-				throw new IllegalArgumentException("Operands cannot be null.");
+        public static QuantityLength add(
+                QuantityLength first,
+                QuantityLength second,
+                LengthUnit targetUnit) {
 
-			if (targetUnit == null)
-				throw new IllegalArgumentException("Target unit cannot be null.");
+            if (first == null || second == null)
+                throw new IllegalArgumentException("Operands cannot be null.");
 
-			double baseSum =
-					first.toBase() + second.toBase();
+            if (targetUnit == null)
+                throw new IllegalArgumentException("Target unit cannot be null.");
 
-			double resultValue =
-					targetUnit.convertFromBaseUnit(baseSum);
+            double baseSum = first.toBase() + second.toBase();
+            double resultValue = targetUnit.convertFromBaseUnit(baseSum);
 
-			return new QuantityLength(resultValue, targetUnit);
-		}
+            return new QuantityLength(resultValue, targetUnit);
+        }
 
-		@Override
-		public boolean equals(Object obj) {
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) return true;
+            if (!(obj instanceof QuantityLength)) return false;
+            QuantityLength other = (QuantityLength) obj;
+            return Math.abs(this.toBase() - other.toBase()) < EPSILON;
+        }
 
-			if (this == obj) return true;
-			if (!(obj instanceof QuantityLength)) return false;
+        @Override
+        public int hashCode() {
+            return Objects.hash(Math.round(toBase() / EPSILON));
+        }
+    }
 
-			QuantityLength other = (QuantityLength) obj;
+    // ===================== WEIGHT =====================
 
-			return Math.abs(
-					this.toBase() - other.toBase()
-					) < EPSILON;
-		}
+    public enum WeightUnit {
 
-		@Override
-		public int hashCode() {
-			return Objects.hash(
-					Math.round(toBase() / EPSILON)
-					);
-		}
-	}
+        KILOGRAM(1.0),
+        GRAM(0.001),
+        POUND(0.453592);
+
+        private final double toKgFactor;
+
+        WeightUnit(double toKgFactor) {
+            this.toKgFactor = toKgFactor;
+        }
+
+        public double convertToBaseUnit(double value) {
+            if (!Double.isFinite(value))
+                throw new IllegalArgumentException("Value must be finite.");
+            return value * toKgFactor;
+        }
+
+        public double convertFromBaseUnit(double baseValue) {
+            if (!Double.isFinite(baseValue))
+                throw new IllegalArgumentException("Value must be finite.");
+            return baseValue / toKgFactor;
+        }
+    }
+
+    public static final class QuantityWeight {
+
+        private final double value;
+        private final WeightUnit unit;
+
+        public QuantityWeight(double value, WeightUnit unit) {
+
+            if (!Double.isFinite(value))
+                throw new IllegalArgumentException("Value must be finite.");
+
+            if (unit == null)
+                throw new IllegalArgumentException("Unit cannot be null.");
+
+            this.value = value;
+            this.unit = unit;
+        }
+
+        private double toBase() {
+            return unit.convertToBaseUnit(value);
+        }
+
+        public double getValue() { return value; }
+
+        public WeightUnit getUnit() { return unit; }
+
+        public static QuantityWeight add(
+                QuantityWeight first,
+                QuantityWeight second) {
+            return add(first, second, first.unit);
+        }
+
+        public static QuantityWeight add(
+                QuantityWeight first,
+                QuantityWeight second,
+                WeightUnit targetUnit) {
+
+            if (first == null || second == null)
+                throw new IllegalArgumentException("Operands cannot be null.");
+
+            if (targetUnit == null)
+                throw new IllegalArgumentException("Target unit cannot be null.");
+
+            double baseSum = first.toBase() + second.toBase();
+            double resultValue = targetUnit.convertFromBaseUnit(baseSum);
+
+            return new QuantityWeight(resultValue, targetUnit);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) return true;
+            if (!(obj instanceof QuantityWeight)) return false;
+            QuantityWeight other = (QuantityWeight) obj;
+            return Math.abs(this.toBase() - other.toBase()) < EPSILON;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(Math.round(toBase() / EPSILON));
+        }
+    }
 }
