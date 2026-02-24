@@ -1,12 +1,10 @@
 /**
- * QuantityMeasurementApp - UC2: Inch measurement equality
+ * QuantityMeasurementApp - UC3: Generic Quantity Measurement
  *
- * This class is responsible for checking the equality of two numerical values
- * measured in feet and inches in the Quantity Measurement Application.
- *
+ * Refactor UC1 and UC2 implementations into a single generic class to
+ * eliminate duplication (DRY principle) and support cross-unit equality.
+ * 
  */
-
-
 package com.apps.quantitymeasurement;
 
 import java.util.Objects;
@@ -14,105 +12,131 @@ import java.util.Scanner;
 
 public class QuantityMeasurementApp {
 
+	// ENUM: LengthUnit: Represents supported measurement units and their conversion factors relative to the base unit (inches).
+	public enum LengthUnit {
 
-	//Inner class to represent Feet measurement
-	public static class Feet {
-		private final double value;
+		FEET(12),   // 1 foot = 12 inches
+		INCH(1);    // Base unit
 
-		public Feet(double value) {
-			this.value = value;
+		private final double toBaseFactor;
+
+		LengthUnit(double toBaseFactor) {
+			this.toBaseFactor = toBaseFactor;
 		}
 
-		public double getValue() {
-			return value;
-		}
-
-		/**
-		 * Overrides equals according to the standard Object contract.
-		 * Uses Double.compare for numeric comparison rather than ==.
+		/*
+		 * Converts given value into base unit (inches).
 		 */
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj) {
-				return true; // reflexive
-			}
-			if (obj == null || getClass() != obj.getClass()) {
-				return false; // null-safe and typed
-			}
-			Feet other = (Feet) obj;
-			return Double.compare(value, other.value) == 0;
-		}
-
-		@Override
-		public int hashCode() {
-			return Objects.hash(value);
+		public double toBase(double value) {
+			return value * toBaseFactor;
 		}
 	}
 
-
-	//Inner class to represent Inch measurement
-	public static class Inches {
+	public static final class QuantityLength {
 
 		private final double value;
+		private final LengthUnit unit;
 
-		public Inches(double value) {
+		/*
+		 * Constructor validates that unit is not null.
+		 */
+		public QuantityLength(double value, LengthUnit unit) {
+
+			if (unit == null) {
+				throw new IllegalArgumentException("Unit cannot be null.");
+			}
+
 			this.value = value;
+			this.unit = unit;
 		}
 
-		public double getValue() {
-			return value;
+		/*
+		 * Converts current measurement to base unit (inches).
+		 */
+		private double toBaseUnit() {
+			return unit.toBase(value);
 		}
 
+		/*
+		 * Overrides equals() method to compare two QuantityLength objects.
+		 *  Convert both measurements to base unit (inches)
+		 *  Compare using Double.compare()
+		 */
 		@Override
 		public boolean equals(Object obj) {
+
 			if (this == obj)
 				return true;
 
 			if (obj == null || getClass() != obj.getClass())
 				return false;
 
-			Inches other = (Inches) obj;
-			return Double.compare(this.value, other.value) == 0;
+			QuantityLength other = (QuantityLength) obj;
+
+			return Double.compare(this.toBaseUnit(), other.toBaseUnit()) == 0;
+		}
+
+		/*
+		 * hashCode overridden to maintain consistency with equals().
+		 */
+		@Override
+		public int hashCode() {
+			return Objects.hash(toBaseUnit());
 		}
 
 		@Override
-		public int hashCode() {
-			return Objects.hash(value);
+		public String toString() {
+			return value + " " + unit;
 		}
+	}
+
+	private static LengthUnit parseUnit(String input) {
+
+		if (input.equalsIgnoreCase("feet"))
+			return LengthUnit.FEET;
+
+		if (input.equalsIgnoreCase("inch") ||
+				input.equalsIgnoreCase("inches"))
+			return LengthUnit.INCH;
+
+		throw new IllegalArgumentException("Invalid unit type entered.");
 	}
 
 	public static void main(String[] args) {
 
-		try (Scanner scanner = new Scanner(System.in)) {
+		try (Scanner sc = new Scanner(System.in)) {
 
-			// FEET INPUT
-			System.out.println("Enter first feet value:");
-			double feet1 = Double.parseDouble(scanner.nextLine());
+			// ----- First Measurement -----
+			System.out.println("Enter first value:");
+			double value1 = Double.parseDouble(sc.nextLine());
 
-			System.out.println("Enter second feet value:");
-			double feet2 = Double.parseDouble(scanner.nextLine());
+			System.out.println("Enter first unit (feet/inches):");
+			LengthUnit unit1 = parseUnit(sc.nextLine());
 
-			Feet f1 = new Feet(feet1);
-			Feet f2 = new Feet(feet2);
+			// ----- Second Measurement -----
+			System.out.println("Enter second value:");
+			double value2 = Double.parseDouble(sc.nextLine());
 
-			boolean feetResult = f1.equals(f2);
-			System.out.println("Are the two values equal? " + feetResult);
+			System.out.println("Enter second unit (feet/inches):");
+			LengthUnit unit2 = parseUnit(sc.nextLine());
 
-			// INCHES INPUT
-			System.out.println("\nEnter first inches value:");
-			double inch1 = Double.parseDouble(scanner.nextLine());
+			// Create objects
+			QuantityLength measurement1 =
+					new QuantityLength(value1, unit1);
 
-			System.out.println("Enter second inches value:");
-			double inch2 = Double.parseDouble(scanner.nextLine());
+			QuantityLength measurement2 =
+					new QuantityLength(value2, unit2);
 
-			Inches i1 = new Inches(inch1);
-			Inches i2 = new Inches(inch2);
+			// Perform equality comparison
+			boolean result = measurement1.equals(measurement2);
 
-			boolean inchResult = i1.equals(i2);
-			System.out.println("Are the two values equal? " + inchResult);
+			// Display result
+			System.out.println("Are the two measurements equal? " + result);
 
 		} catch (NumberFormatException e) {
-			System.err.println("Invalid numeric input provided.");
+			System.err.println("Invalid numeric value entered.");
+		} catch (IllegalArgumentException e) {
+			System.err.println(e.getMessage());
 		}
 	}
 }
