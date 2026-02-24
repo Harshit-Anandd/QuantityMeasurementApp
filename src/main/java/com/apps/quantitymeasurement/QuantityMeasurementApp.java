@@ -1,8 +1,8 @@
 /**
- * QuantityMeasurementApp - UC7: Addition with Explicit Target Unit
+ * QuantityMeasurementApp - UC7: Refactor QuantityLength
  *
- * Extends UC6 by allowing the caller to explicitly specify the target unit
- * in which the addition result should be returned.
+ * Refactor the QuantityLength class to delegate unit conversion
+ * responsibilities to a standalone LengthUnit enum. 
  *
  */
 package com.apps.quantitymeasurement;
@@ -17,23 +17,27 @@ public class QuantityMeasurementApp {
 	// ENUM: LengthUnit: Stores conversion factor relative to base unit (inches).
 	public enum LengthUnit {
 
-		FEET(12),
-		INCH(1),
-		YARD(36),
-		CENTIMETER(0.393701);
+		FEET(1.0),
+		INCH(1.0 / 12.0),
+		YARD(3.0),
+		CENTIMETER(1.0 / 30.48);
 
-		private final double toBaseFactor;
+		private final double toFeetFactor;
 
-		LengthUnit(double toBaseFactor) {
-			this.toBaseFactor = toBaseFactor;
+		LengthUnit(double toFeetFactor) {
+			this.toFeetFactor = toFeetFactor;
 		}
 
-		public double toBase(double value) {
-			return value * toBaseFactor;
+		public double convertToBaseUnit(double value) {
+			if (!Double.isFinite(value))
+				throw new IllegalArgumentException("Value must be finite.");
+			return value * toFeetFactor;
 		}
 
-		public double fromBase(double baseValue) {
-			return baseValue / toBaseFactor;
+		public double convertFromBaseUnit(double baseValue) {
+			if (!Double.isFinite(baseValue))
+				throw new IllegalArgumentException("Value must be finite.");
+			return baseValue / toFeetFactor;
 		}
 	}
 
@@ -54,10 +58,6 @@ public class QuantityMeasurementApp {
 			this.unit = unit;
 		}
 
-		private double toBaseUnit() {
-			return unit.toBase(value);
-		}
-
 		public double getValue() {
 			return value;
 		}
@@ -66,7 +66,10 @@ public class QuantityMeasurementApp {
 			return unit;
 		}
 
-		// UC7 Core Method
+		private double toBase() {
+			return unit.convertToBaseUnit(value);
+		}
+
 		public static QuantityLength add(
 				QuantityLength first,
 				QuantityLength second,
@@ -78,11 +81,11 @@ public class QuantityMeasurementApp {
 			if (targetUnit == null)
 				throw new IllegalArgumentException("Target unit cannot be null.");
 
-			double sumBase =
-					first.toBaseUnit() + second.toBaseUnit();
+			double baseSum =
+					first.toBase() + second.toBase();
 
 			double resultValue =
-					targetUnit.fromBase(sumBase);
+					targetUnit.convertFromBaseUnit(baseSum);
 
 			return new QuantityLength(resultValue, targetUnit);
 		}
@@ -91,19 +94,19 @@ public class QuantityMeasurementApp {
 		public boolean equals(Object obj) {
 
 			if (this == obj) return true;
-			if (obj == null || getClass() != obj.getClass()) return false;
+			if (!(obj instanceof QuantityLength)) return false;
 
 			QuantityLength other = (QuantityLength) obj;
 
 			return Math.abs(
-					this.toBaseUnit() - other.toBaseUnit()
+					this.toBase() - other.toBase()
 					) < EPSILON;
 		}
 
 		@Override
 		public int hashCode() {
 			return Objects.hash(
-					Math.round(toBaseUnit() / EPSILON)
+					Math.round(toBase() / EPSILON)
 					);
 		}
 	}
