@@ -1,8 +1,8 @@
 /**
- * QuantityMeasurementApp - UC9: Add Weight Measurement Support
+ * QuantityMeasurementApp - UC10: Generic Quantity Refactor
  *
- * Extends UC8 by introducing WeightUnit and QuantityWeight
- * while maintaining strict separation between categories.
+ * Refactors Length and Weight implementations into
+ * a single generic Quantity<U extends IMeasurable>.
  */
 package com.apps.quantitymeasurement;
 
@@ -10,178 +10,191 @@ import java.util.Objects;
 
 public class QuantityMeasurementApp {
 
-    private static final double EPSILON = 0.0001;
+	private static final double EPSILON = 0.0001;
 
-    // ===================== LENGTH =====================
+	// =========================================================
+	// Interface
+	// =========================================================
 
-    public enum LengthUnit {
+	public interface IMeasurable {
 
-        FEET(1.0),
-        INCH(1.0 / 12.0),
-        YARD(3.0),
-        CENTIMETER(1.0 / 30.48);
+		double convertToBaseUnit(double value);
 
-        private final double toFeetFactor;
+		double convertFromBaseUnit(double baseValue);
 
-        LengthUnit(double toFeetFactor) {
-            this.toFeetFactor = toFeetFactor;
-        }
+		double getConversionFactor();
 
-        public double convertToBaseUnit(double value) {
-            if (!Double.isFinite(value))
-                throw new IllegalArgumentException("Value must be finite.");
-            return value * toFeetFactor;
-        }
+		String getUnitName();
+	}
 
-        public double convertFromBaseUnit(double baseValue) {
-            if (!Double.isFinite(baseValue))
-                throw new IllegalArgumentException("Value must be finite.");
-            return baseValue / toFeetFactor;
-        }
-    }
+	// =========================================================
+	// Length Units
+	// =========================================================
 
-    public static final class QuantityLength {
+	public enum LengthUnit implements IMeasurable {
 
-        private final double value;
-        private final LengthUnit unit;
+		FEET(1.0),
+		INCH(1.0 / 12.0),
+		YARD(3.0),
+		CENTIMETER(1.0 / 30.48);
 
-        public QuantityLength(double value, LengthUnit unit) {
+		private final double factor;
 
-            if (!Double.isFinite(value))
-                throw new IllegalArgumentException("Value must be finite.");
+		LengthUnit(double factor) {
+			this.factor = factor;
+		}
 
-            if (unit == null)
-                throw new IllegalArgumentException("Unit cannot be null.");
+		@Override
+		public double convertToBaseUnit(double value) {
+			if (!Double.isFinite(value))
+				throw new IllegalArgumentException("Value must be finite.");
+			return value * factor;
+		}
 
-            this.value = value;
-            this.unit = unit;
-        }
+		@Override
+		public double convertFromBaseUnit(double baseValue) {
+			if (!Double.isFinite(baseValue))
+				throw new IllegalArgumentException("Value must be finite.");
+			return baseValue / factor;
+		}
 
-        private double toBase() {
-            return unit.convertToBaseUnit(value);
-        }
+		@Override
+		public double getConversionFactor() {
+			return factor;
+		}
 
-        public double getValue() { return value; }
+		@Override
+		public String getUnitName() {
+			return name();
+		}
+	}
 
-        public LengthUnit getUnit() { return unit; }
+	// =========================================================
+	// Weight Units
+	// =========================================================
 
-        public static QuantityLength add(
-                QuantityLength first,
-                QuantityLength second,
-                LengthUnit targetUnit) {
+	public enum WeightUnit implements IMeasurable {
 
-            if (first == null || second == null)
-                throw new IllegalArgumentException("Operands cannot be null.");
+		KILOGRAM(1.0),
+		GRAM(0.001),
+		POUND(0.453592);
 
-            if (targetUnit == null)
-                throw new IllegalArgumentException("Target unit cannot be null.");
+		private final double factor;
 
-            double baseSum = first.toBase() + second.toBase();
-            double resultValue = targetUnit.convertFromBaseUnit(baseSum);
+		WeightUnit(double factor) {
+			this.factor = factor;
+		}
 
-            return new QuantityLength(resultValue, targetUnit);
-        }
+		@Override
+		public double convertToBaseUnit(double value) {
+			if (!Double.isFinite(value))
+				throw new IllegalArgumentException("Value must be finite.");
+			return value * factor;
+		}
 
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) return true;
-            if (!(obj instanceof QuantityLength)) return false;
-            QuantityLength other = (QuantityLength) obj;
-            return Math.abs(this.toBase() - other.toBase()) < EPSILON;
-        }
+		@Override
+		public double convertFromBaseUnit(double baseValue) {
+			if (!Double.isFinite(baseValue))
+				throw new IllegalArgumentException("Value must be finite.");
+			return baseValue / factor;
+		}
 
-        @Override
-        public int hashCode() {
-            return Objects.hash(Math.round(toBase() / EPSILON));
-        }
-    }
+		@Override
+		public double getConversionFactor() {
+			return factor;
+		}
 
-    // ===================== WEIGHT =====================
+		@Override
+		public String getUnitName() {
+			return name();
+		}
+	}
 
-    public enum WeightUnit {
+	// =========================================================
+	// Generic Quantity
+	// =========================================================
 
-        KILOGRAM(1.0),
-        GRAM(0.001),
-        POUND(0.453592);
+	public static final class Quantity<U extends IMeasurable> {
 
-        private final double toKgFactor;
+		private final double value;
+		private final U unit;
 
-        WeightUnit(double toKgFactor) {
-            this.toKgFactor = toKgFactor;
-        }
+		public Quantity(double value, U unit) {
 
-        public double convertToBaseUnit(double value) {
-            if (!Double.isFinite(value))
-                throw new IllegalArgumentException("Value must be finite.");
-            return value * toKgFactor;
-        }
+			if (!Double.isFinite(value))
+				throw new IllegalArgumentException("Value must be finite.");
 
-        public double convertFromBaseUnit(double baseValue) {
-            if (!Double.isFinite(baseValue))
-                throw new IllegalArgumentException("Value must be finite.");
-            return baseValue / toKgFactor;
-        }
-    }
+			if (unit == null)
+				throw new IllegalArgumentException("Unit cannot be null.");
 
-    public static final class QuantityWeight {
+			this.value = value;
+			this.unit = unit;
+		}
 
-        private final double value;
-        private final WeightUnit unit;
+		public double getValue() { return value; }
 
-        public QuantityWeight(double value, WeightUnit unit) {
+		public U getUnit() { return unit; }
 
-            if (!Double.isFinite(value))
-                throw new IllegalArgumentException("Value must be finite.");
+		private double toBase() {
+			return unit.convertToBaseUnit(value);
+		}
 
-            if (unit == null)
-                throw new IllegalArgumentException("Unit cannot be null.");
+		public Quantity<U> convertTo(U targetUnit) {
 
-            this.value = value;
-            this.unit = unit;
-        }
+			if (targetUnit == null)
+				throw new IllegalArgumentException("Target unit cannot be null.");
 
-        private double toBase() {
-            return unit.convertToBaseUnit(value);
-        }
+			double base = toBase();
+			double converted = targetUnit.convertFromBaseUnit(base);
 
-        public double getValue() { return value; }
+			return new Quantity<>(converted, targetUnit);
+		}
 
-        public WeightUnit getUnit() { return unit; }
+		public Quantity<U> add(Quantity<U> other) {
 
-        public static QuantityWeight add(
-                QuantityWeight first,
-                QuantityWeight second) {
-            return add(first, second, first.unit);
-        }
+			if (other == null)
+				throw new IllegalArgumentException("Operand cannot be null.");
 
-        public static QuantityWeight add(
-                QuantityWeight first,
-                QuantityWeight second,
-                WeightUnit targetUnit) {
+			return add(other, this.unit);
+		}
 
-            if (first == null || second == null)
-                throw new IllegalArgumentException("Operands cannot be null.");
+		public Quantity<U> add(Quantity<U> other, U targetUnit) {
 
-            if (targetUnit == null)
-                throw new IllegalArgumentException("Target unit cannot be null.");
+			if (other == null)
+				throw new IllegalArgumentException("Operand cannot be null.");
 
-            double baseSum = first.toBase() + second.toBase();
-            double resultValue = targetUnit.convertFromBaseUnit(baseSum);
+			if (targetUnit == null)
+				throw new IllegalArgumentException("Target unit cannot be null.");
 
-            return new QuantityWeight(resultValue, targetUnit);
-        }
+			double baseSum = this.toBase() + other.toBase();
+			double converted = targetUnit.convertFromBaseUnit(baseSum);
 
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj) return true;
-            if (!(obj instanceof QuantityWeight)) return false;
-            QuantityWeight other = (QuantityWeight) obj;
-            return Math.abs(this.toBase() - other.toBase()) < EPSILON;
-        }
+			return new Quantity<>(converted, targetUnit);
+		}
 
-        @Override
-        public int hashCode() {
-            return Objects.hash(Math.round(toBase() / EPSILON));
-        }
-    }
+		@Override
+		public boolean equals(Object obj) {
+
+			if (this == obj) return true;
+			if (!(obj instanceof Quantity)) return false;
+
+			Quantity<?> other = (Quantity<?>) obj;
+
+			if (!this.unit.getClass().equals(other.unit.getClass()))
+				return false;
+
+			return Math.abs(this.toBase() - other.toBase()) < EPSILON;
+		}
+
+		@Override
+		public int hashCode() {
+			return Objects.hash(Math.round(toBase() / EPSILON),
+					unit.getClass());
+		}
+
+		@Override
+		public String toString() {
+			return value + " " + unit.getUnitName();
+		}
+	}
 }
