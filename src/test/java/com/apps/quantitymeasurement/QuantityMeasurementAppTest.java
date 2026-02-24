@@ -314,4 +314,356 @@ public class QuantityMeasurementAppTest {
 
 		assertNotSame(w, result);
 	}
+
+	// 36
+	@Test
+	void testVolumeUnit_LitreExists() {
+		assertNotNull(QuantityMeasurementApp.VolumeUnit.LITRE);
+	}
+
+	// 37
+	@Test
+	void testVolumeUnit_MilliLitreExists() {
+		assertNotNull(QuantityMeasurementApp.VolumeUnit.MILLILITRE);
+	}
+
+	// 38
+	@Test
+	void testVolumeUnit_GallonExists() {
+		assertNotNull(QuantityMeasurementApp.VolumeUnit.GALLON);
+	}
+
+	//	// 39
+	//	@Test
+	//	void testVolumeEquality_LitreAndMilliLitre() {
+	//		QuantityMeasurementApp.Quantity<QuantityMeasurementApp.VolumeUnit> v1 =
+	//				new QuantityMeasurementApp.Quantity<>(1,
+	//						QuantityMeasurementApp.VolumeUnit.LITRE);
+	//
+	//		QuantityMeasurementApp.Quantity<QuantityMeasurementApp.VolumeUnit> v2 =
+	//				new QuantityMeasurementApp.Quantity<>(1000,
+	//						QuantityMeasurementApp.VolumeUnit.MILLILITRE);
+	//
+	//		assertEquals(v1, v2);
+	//	}
+	//
+	//	// 40
+	//	@Test
+	//	void testVolumeEquality_LitreAndGallon() {
+	//		QuantityMeasurementApp.Quantity<QuantityMeasurementApp.VolumeUnit> v1 =
+	//				new QuantityMeasurementApp.Quantity<>(1,
+	//						QuantityMeasurementApp.VolumeUnit.LITRE);
+	//
+	//		QuantityMeasurementApp.Quantity<QuantityMeasurementApp.VolumeUnit> v2 =
+	//				new QuantityMeasurementApp.Quantity<>(0.264172,
+	//						QuantityMeasurementApp.VolumeUnit.GALLON);
+	//
+	//		assertEquals(v1, v2);
+	//	}
+	//
+	//	// 41
+	//	@Test
+	//	void testVolumeEquality_Zero() {
+	//		QuantityMeasurementApp.Quantity<QuantityMeasurementApp.VolumeUnit> v1 =
+	//				new QuantityMeasurementApp.Quantity<>(0,
+	//						QuantityMeasurementApp.VolumeUnit.LITRE);
+	//
+	//		QuantityMeasurementApp.Quantity<QuantityMeasurementApp.VolumeUnit> v2 =
+	//				new QuantityMeasurementApp.Quantity<>(0,
+	//						QuantityMeasurementApp.VolumeUnit.MILLILITRE);
+	//
+	//		assertEquals(v1, v2);
+	//	}
+	//
+	//	// 42
+	//	@Test
+	//	void testVolumeEquality_Negative() {
+	//		QuantityMeasurementApp.Quantity<QuantityMeasurementApp.VolumeUnit> v1 =
+	//				new QuantityMeasurementApp.Quantity<>(-1,
+	//						QuantityMeasurementApp.VolumeUnit.LITRE);
+	//
+	//		QuantityMeasurementApp.Quantity<QuantityMeasurementApp.VolumeUnit> v2 =
+	//				new QuantityMeasurementApp.Quantity<>(-1000,
+	//						QuantityMeasurementApp.VolumeUnit.MILLILITRE);
+	//
+	//		assertEquals(v1, v2);
+	//	}
+	//
+	//	// 39
+	//	@Test
+	//	void testVolumeEquality_LitreAndMilliLitre() {
+	//		QuantityMeasurementApp.Quantity<QuantityMeasurementApp.VolumeUnit> v1 =
+	//				new QuantityMeasurementApp.Quantity<>(1,
+	//						QuantityMeasurementApp.VolumeUnit.LITRE);
+	//
+	//		QuantityMeasurementApp.Quantity<QuantityMeasurementApp.VolumeUnit> v2 =
+	//				new QuantityMeasurementApp.Quantity<>(1000,
+	//						QuantityMeasurementApp.VolumeUnit.MILLILITRE);
+	//
+	//		assertEquals(v1, v2);
+	//	}
+	//
+	//	// 40
+	//	@Test
+	//	void testVolumeEquality_LitreAndGallon() {
+	//		QuantityMeasurementApp.Quantity<QuantityMeasurementApp.VolumeUnit> v1 =
+	//				new QuantityMeasurementApp.Quantity<>(1,
+	//						QuantityMeasurementApp.VolumeUnit.LITRE);
+	//
+	//		QuantityMeasurementApp.Quantity<QuantityMeasurementApp.VolumeUnit> v2 =
+	//				new QuantityMeasurementApp.Quantity<>(0.264172,
+	//						QuantityMeasurementApp.VolumeUnit.GALLON);
+	//
+	//		assertEquals(v1, v2);
+	//	}
+	//
+	//	// 41
+	//	@Test
+	//	void testVolumeEquality_Zero() {
+	//		QuantityMeasurementApp.Quantity<QuantityMeasurementApp.VolumeUnit> v1 =
+	//				new QuantityMeasurementApp.Quantity<>(0,
+	//						QuantityMeasurementApp.VolumeUnit.LITRE);
+	//
+	//		QuantityMeasurementApp.Quantity<QuantityMeasurementApp.VolumeUnit> v2 =
+	//				new QuantityMeasurementApp.Quantity<>(0,
+	//						QuantityMeasurementApp.VolumeUnit.MILLILITRE);
+	//
+	//		assertEquals(v1, v2);
+	//	}
+	//
+	//	// 42
+	//	@Test
+	//	void testVolumeEquality_Negative() {
+	//		QuantityMeasurementApp.Quantity<QuantityMeasurementApp.VolumeUnit> v1 =
+	//				new QuantityMeasurementApp.Quantity<>(-1,
+	//						QuantityMeasurementApp.VolumeUnit.LITRE);
+	//
+	//		QuantityMeasurementApp.Quantity<QuantityMeasurementApp.VolumeUnit> v2 =
+	//				new QuantityMeasurementApp.Quantity<>(-1000,
+	//						QuantityMeasurementApp.VolumeUnit.MILLILITRE);
+	//
+	//		assertEquals(v1, v2);
+	//	}
+
+	// 45
+	@Test
+	void testVolumeConversion_LitreToMilliLitre() {
+		QuantityMeasurementApp.Quantity<QuantityMeasurementApp.VolumeUnit> v =
+				new QuantityMeasurementApp.Quantity<>(1,
+						QuantityMeasurementApp.VolumeUnit.LITRE);
+
+		assertEquals(1000,
+				v.convertTo(QuantityMeasurementApp.VolumeUnit.MILLILITRE)
+				.getValue(), DELTA);
+	}
+
+	// 46
+	@Test
+	void testVolumeConversion_MilliLitreToLitre() {
+		QuantityMeasurementApp.Quantity<QuantityMeasurementApp.VolumeUnit> v =
+				new QuantityMeasurementApp.Quantity<>(1000,
+						QuantityMeasurementApp.VolumeUnit.MILLILITRE);
+
+		assertEquals(1,
+				v.convertTo(QuantityMeasurementApp.VolumeUnit.LITRE)
+				.getValue(), DELTA);
+	}
+
+	// 47
+	@Test
+	void testVolumeConversion_LitreToGallon() {
+		QuantityMeasurementApp.Quantity<QuantityMeasurementApp.VolumeUnit> v =
+				new QuantityMeasurementApp.Quantity<>(3.78541,
+						QuantityMeasurementApp.VolumeUnit.LITRE);
+
+		assertEquals(1,
+				v.convertTo(QuantityMeasurementApp.VolumeUnit.GALLON)
+				.getValue(), DELTA);
+	}
+
+	// 48
+	@Test
+	void testVolumeConversion_GallonToLitre() {
+		QuantityMeasurementApp.Quantity<QuantityMeasurementApp.VolumeUnit> v =
+				new QuantityMeasurementApp.Quantity<>(1,
+						QuantityMeasurementApp.VolumeUnit.GALLON);
+
+		assertEquals(3.78541,
+				v.convertTo(QuantityMeasurementApp.VolumeUnit.LITRE)
+				.getValue(), DELTA);
+	}
+
+	// 51
+	@Test
+	void testVolumeAddition_SameUnit_Litre() {
+
+		QuantityMeasurementApp.Quantity<QuantityMeasurementApp.VolumeUnit> v1 =
+				new QuantityMeasurementApp.Quantity<>(2,
+						QuantityMeasurementApp.VolumeUnit.LITRE);
+
+		QuantityMeasurementApp.Quantity<QuantityMeasurementApp.VolumeUnit> v2 =
+				new QuantityMeasurementApp.Quantity<>(3,
+						QuantityMeasurementApp.VolumeUnit.LITRE);
+
+		QuantityMeasurementApp.Quantity<QuantityMeasurementApp.VolumeUnit> result =
+				v1.add(v2);
+
+		assertEquals(5, result.getValue(), DELTA);
+		assertEquals(QuantityMeasurementApp.VolumeUnit.LITRE,
+				result.getUnit());
+	}
+
+	// 52
+	@Test
+	void testVolumeAddition_CrossUnit_DefaultFirstUnit() {
+
+		QuantityMeasurementApp.Quantity<QuantityMeasurementApp.VolumeUnit> v1 =
+				new QuantityMeasurementApp.Quantity<>(1,
+						QuantityMeasurementApp.VolumeUnit.LITRE);
+
+		QuantityMeasurementApp.Quantity<QuantityMeasurementApp.VolumeUnit> v2 =
+				new QuantityMeasurementApp.Quantity<>(500,
+						QuantityMeasurementApp.VolumeUnit.MILLILITRE);
+
+		QuantityMeasurementApp.Quantity<QuantityMeasurementApp.VolumeUnit> result =
+				v1.add(v2);
+
+		assertEquals(1.5, result.getValue(), DELTA);
+		assertEquals(QuantityMeasurementApp.VolumeUnit.LITRE,
+				result.getUnit());
+	}
+
+	// 53
+	@Test
+	void testVolumeAddition_TargetMilliLitre() {
+
+		QuantityMeasurementApp.Quantity<QuantityMeasurementApp.VolumeUnit> v1 =
+				new QuantityMeasurementApp.Quantity<>(1,
+						QuantityMeasurementApp.VolumeUnit.LITRE);
+
+		QuantityMeasurementApp.Quantity<QuantityMeasurementApp.VolumeUnit> v2 =
+				new QuantityMeasurementApp.Quantity<>(1,
+						QuantityMeasurementApp.VolumeUnit.LITRE);
+
+		QuantityMeasurementApp.Quantity<QuantityMeasurementApp.VolumeUnit> result =
+				v1.add(v2,
+						QuantityMeasurementApp.VolumeUnit.MILLILITRE);
+
+		assertEquals(2000, result.getValue(), DELTA);
+		assertEquals(QuantityMeasurementApp.VolumeUnit.MILLILITRE,
+				result.getUnit());
+	}
+
+	// 54
+	@Test
+	void testVolumeAddition_GallonAndLitre() {
+
+		QuantityMeasurementApp.Quantity<QuantityMeasurementApp.VolumeUnit> gallon =
+				new QuantityMeasurementApp.Quantity<>(1,
+						QuantityMeasurementApp.VolumeUnit.GALLON);
+
+		QuantityMeasurementApp.Quantity<QuantityMeasurementApp.VolumeUnit> litre =
+				new QuantityMeasurementApp.Quantity<>(1,
+						QuantityMeasurementApp.VolumeUnit.LITRE);
+
+		QuantityMeasurementApp.Quantity<QuantityMeasurementApp.VolumeUnit> result =
+				gallon.add(litre,
+						QuantityMeasurementApp.VolumeUnit.LITRE);
+
+		double expected = 3.78541 + 1;   // convert gallon to litre then add
+
+		assertEquals(expected, result.getValue(), DELTA);
+	}
+
+	// 55
+	@Test
+	void testVolumeAddition_CommutativeAndNegative() {
+
+		QuantityMeasurementApp.Quantity<QuantityMeasurementApp.VolumeUnit> v1 =
+				new QuantityMeasurementApp.Quantity<>(-1,
+						QuantityMeasurementApp.VolumeUnit.LITRE);
+
+		QuantityMeasurementApp.Quantity<QuantityMeasurementApp.VolumeUnit> v2 =
+				new QuantityMeasurementApp.Quantity<>(2000,
+						QuantityMeasurementApp.VolumeUnit.MILLILITRE);
+
+		QuantityMeasurementApp.Quantity<QuantityMeasurementApp.VolumeUnit> r1 =
+				v1.add(v2);
+
+		QuantityMeasurementApp.Quantity<QuantityMeasurementApp.VolumeUnit> r2 =
+				v2.add(v1,
+						QuantityMeasurementApp.VolumeUnit.MILLILITRE);
+
+		assertEquals(1, r1.getValue(), DELTA);        // -1 L + 2 L = 1 L
+		assertEquals(1000, r2.getValue(), DELTA);    // same in mL
+	}
+
+	// 56
+	@Test
+	void testVolumeRoundTripConversion() {
+		QuantityMeasurementApp.Quantity<QuantityMeasurementApp.VolumeUnit> v =
+				new QuantityMeasurementApp.Quantity<>(5,
+						QuantityMeasurementApp.VolumeUnit.GALLON);
+
+		QuantityMeasurementApp.Quantity<QuantityMeasurementApp.VolumeUnit> back =
+				v.convertTo(QuantityMeasurementApp.VolumeUnit.LITRE)
+				.convertTo(QuantityMeasurementApp.VolumeUnit.GALLON);
+
+		assertEquals(v.getValue(), back.getValue(), DELTA);
+	}
+
+	// 57
+	@Test
+	void testVolumeHashCodeConsistency() {
+		QuantityMeasurementApp.Quantity<QuantityMeasurementApp.VolumeUnit> v1 =
+				new QuantityMeasurementApp.Quantity<>(1,
+						QuantityMeasurementApp.VolumeUnit.LITRE);
+
+		QuantityMeasurementApp.Quantity<QuantityMeasurementApp.VolumeUnit> v2 =
+				new QuantityMeasurementApp.Quantity<>(1000,
+						QuantityMeasurementApp.VolumeUnit.MILLILITRE);
+
+		assertEquals(v1.hashCode(), v2.hashCode());
+	}
+
+	// 58
+	@Test
+	void testVolumeNotEqualLength() {
+		QuantityMeasurementApp.Quantity<QuantityMeasurementApp.VolumeUnit> v =
+				new QuantityMeasurementApp.Quantity<>(1,
+						QuantityMeasurementApp.VolumeUnit.LITRE);
+
+		QuantityMeasurementApp.Quantity<QuantityMeasurementApp.LengthUnit> l =
+				new QuantityMeasurementApp.Quantity<>(1,
+						QuantityMeasurementApp.LengthUnit.FEET);
+
+		assertNotEquals(v, l);
+	}
+
+	// 59
+	@Test
+	void testVolumeNotEqualWeight() {
+		QuantityMeasurementApp.Quantity<QuantityMeasurementApp.VolumeUnit> v =
+				new QuantityMeasurementApp.Quantity<>(1,
+						QuantityMeasurementApp.VolumeUnit.LITRE);
+
+		QuantityMeasurementApp.Quantity<QuantityMeasurementApp.WeightUnit> w =
+				new QuantityMeasurementApp.Quantity<>(1,
+						QuantityMeasurementApp.WeightUnit.KILOGRAM);
+
+		assertNotEquals(v, w);
+	}
+
+	// 60
+	@Test
+	void testVolumeImmutability() {
+		QuantityMeasurementApp.Quantity<QuantityMeasurementApp.VolumeUnit> v =
+				new QuantityMeasurementApp.Quantity<>(5,
+						QuantityMeasurementApp.VolumeUnit.LITRE);
+
+		QuantityMeasurementApp.Quantity<QuantityMeasurementApp.VolumeUnit> result =
+				v.add(v);
+
+		assertNotSame(v, result);
+	}
 }
