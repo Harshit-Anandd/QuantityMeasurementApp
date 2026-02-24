@@ -1,9 +1,9 @@
 /**
- * QuantityMeasurementApp - UC3: Generic Quantity Measurement
+ * QuantityMeasurementApp - UC4: Extended Unit Support
  *
- * Refactor UC1 and UC2 implementations into a single generic class to
- * eliminate duplication (DRY principle) and support cross-unit equality.
- * 
+ * Extend UC3 generic measurement implementation to support additional units
+ * without duplicating code (DRY principle).
+ *
  */
 package com.apps.quantitymeasurement;
 
@@ -12,11 +12,13 @@ import java.util.Scanner;
 
 public class QuantityMeasurementApp {
 
-	// ENUM: LengthUnit: Represents supported measurement units and their conversion factors relative to the base unit (inches).
+	// ENUM: LengthUnit: Stores conversion factor relative to base unit (inches).
 	public enum LengthUnit {
 
-		FEET(12),   // 1 foot = 12 inches
-		INCH(1);    // Base unit
+		FEET(12),
+		INCH(1),
+		YARD(36),
+		CENTIMETER(0.393701);
 
 		private final double toBaseFactor;
 
@@ -24,9 +26,7 @@ public class QuantityMeasurementApp {
 			this.toBaseFactor = toBaseFactor;
 		}
 
-		/*
-		 * Converts given value into base unit (inches).
-		 */
+		// Converts given value into base unit (inches).
 		public double toBase(double value) {
 			return value * toBaseFactor;
 		}
@@ -99,6 +99,15 @@ public class QuantityMeasurementApp {
 				input.equalsIgnoreCase("inches"))
 			return LengthUnit.INCH;
 
+		if (input.equalsIgnoreCase("yard") ||
+				input.equalsIgnoreCase("yards"))
+			return LengthUnit.YARD;
+
+		if (input.equalsIgnoreCase("cm") ||
+				input.equalsIgnoreCase("centimeter") ||
+				input.equalsIgnoreCase("centimeters"))
+			return LengthUnit.CENTIMETER;
+
 		throw new IllegalArgumentException("Invalid unit type entered.");
 	}
 
@@ -106,31 +115,28 @@ public class QuantityMeasurementApp {
 
 		try (Scanner sc = new Scanner(System.in)) {
 
-			// ----- First Measurement -----
+			// First Measurement
 			System.out.println("Enter first value:");
 			double value1 = Double.parseDouble(sc.nextLine());
 
-			System.out.println("Enter first unit (feet/inches):");
+			System.out.println("Enter first unit (feet/inches/yards/cm):");
 			LengthUnit unit1 = parseUnit(sc.nextLine());
 
-			// ----- Second Measurement -----
+			// Second Measurement
 			System.out.println("Enter second value:");
 			double value2 = Double.parseDouble(sc.nextLine());
 
-			System.out.println("Enter second unit (feet/inches):");
+			System.out.println("Enter second unit (feet/inches/yards/cm):");
 			LengthUnit unit2 = parseUnit(sc.nextLine());
 
-			// Create objects
 			QuantityLength measurement1 =
 					new QuantityLength(value1, unit1);
 
 			QuantityLength measurement2 =
 					new QuantityLength(value2, unit2);
 
-			// Perform equality comparison
 			boolean result = measurement1.equals(measurement2);
 
-			// Display result
 			System.out.println("Are the two measurements equal? " + result);
 
 		} catch (NumberFormatException e) {
