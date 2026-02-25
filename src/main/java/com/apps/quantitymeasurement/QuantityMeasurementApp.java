@@ -1,9 +1,9 @@
 /**
- * QuantityMeasurementApp - UC13: Centralized Arithmetic Logic (DRY Enforcement)
+ * QuantityMeasurementApp - UC14:
+ * Temperature Measurement with Selective Arithmetic Support
  *
- * Refactors arithmetic logic (add, subtract, divide)
- * by centralizing validation and base conversion logic
- * into a single reusable method.
+ * Adds TemperatureUnit with restricted arithmetic.
+ * Refactors IMeasurable to allow optional arithmetic support.
  */
 package com.apps.quantitymeasurement;
 
@@ -14,7 +14,7 @@ public class QuantityMeasurementApp {
 	private static final double EPSILON = 0.0001;
 
 	// =========================================================
-	// Interface
+	// Interface (UC14 Refactored)
 	// =========================================================
 
 	public interface IMeasurable {
@@ -22,6 +22,11 @@ public class QuantityMeasurementApp {
 		double convertFromBaseUnit(double baseValue);
 		double getConversionFactor();
 		String getUnitName();
+
+		// UC14: Selective arithmetic support
+		default boolean supportsArithmetic() {
+			return true;
+		}
 	}
 
 	// =========================================================
@@ -112,13 +117,67 @@ public class QuantityMeasurementApp {
 		public String getUnitName() { return name(); }
 	}
 
+	// =========================================================
+	// Temperature Units (Base: KELVIN) - UC14
+	// =========================================================
+
+	public enum TemperatureUnit implements IMeasurable {
+		KELVIN,
+		CELSIUS,
+		FAHRENHEIT;
+
+		public double convertToBaseUnit(double value) {
+			validate(value);
+
+			switch (this) {
+			case KELVIN:
+				return value;
+			case CELSIUS:
+				return value + 273.15;
+			case FAHRENHEIT:
+				return (value - 32) * 5 / 9 + 273.15;
+			default:
+				throw new IllegalStateException("Unexpected unit.");
+			}
+		}
+
+		public double convertFromBaseUnit(double baseValue) {
+			validate(baseValue);
+
+			switch (this) {
+			case KELVIN:
+				return baseValue;
+			case CELSIUS:
+				return baseValue - 273.15;
+			case FAHRENHEIT:
+				return (baseValue - 273.15) * 9 / 5 + 32;
+			default:
+				throw new IllegalStateException("Unexpected unit.");
+			}
+		}
+
+		// Not meaningful for temperature (offset-based conversion)
+		public double getConversionFactor() {
+			throw new UnsupportedOperationException(
+					"Temperature uses offset conversion, not factor-based conversion.");
+		}
+
+		public String getUnitName() { return name(); }
+
+		// UC14: Arithmetic not supported
+		@Override
+		public boolean supportsArithmetic() {
+			return false;
+		}
+	}
+
 	private static void validate(double value) {
 		if (!Double.isFinite(value))
 			throw new IllegalArgumentException("Value must be finite.");
 	}
 
 	// =========================================================
-	// Generic Quantity (UC13 Refactored)
+	// Generic Quantity (UC14 Updated)
 	// =========================================================
 
 	public static final class Quantity<U extends IMeasurable> {
@@ -145,20 +204,10 @@ public class QuantityMeasurementApp {
 			return Math.round(val * 100.0) / 100.0;
 		}
 
-		// =========================================================
-		// UC13 CENTRALIZED ARITHMETIC CORE
-		// =========================================================
-
 		private enum ArithmeticOperation {
-			ADD {
-				double apply(double a, double b) { return a + b; }
-			},
-			SUBTRACT {
-				double apply(double a, double b) { return a - b; }
-			},
-			DIVIDE {
-				double apply(double a, double b) { return a / b; }
-			};
+			ADD { double apply(double a, double b) { return a + b; }},
+			SUBTRACT { double apply(double a, double b) { return a - b; }},
+			DIVIDE { double apply(double a, double b) { return a / b; }};
 
 			abstract double apply(double a, double b);
 		}
@@ -174,6 +223,11 @@ public class QuantityMeasurementApp {
 				throw new IllegalArgumentException(
 						"Cannot operate on different quantity categories.");
 
+			// UC14: Restrict arithmetic for temperature
+			if (!this.unit.supportsArithmetic())
+				throw new UnsupportedOperationException(
+						"Arithmetic operations are not supported for temperature quantities.");
+
 			double base1 = this.toBase();
 			double base2 = other.unit.convertToBaseUnit(other.value);
 
@@ -183,10 +237,6 @@ public class QuantityMeasurementApp {
 
 			return operation.apply(base1, base2);
 		}
-
-		// =========================================================
-		// ADD
-		// =========================================================
 
 		public Quantity<U> add(Quantity<U> other) {
 			return add(other, this.unit);
@@ -202,10 +252,6 @@ public class QuantityMeasurementApp {
 
 			return new Quantity<>(converted, targetUnit);
 		}
-
-		// =========================================================
-		// SUBTRACT
-		// =========================================================
 
 		public Quantity<U> subtract(Quantity<U> other) {
 			return subtract(other, this.unit);
@@ -225,17 +271,9 @@ public class QuantityMeasurementApp {
 					);
 		}
 
-		// =========================================================
-		// DIVIDE
-		// =========================================================
-
 		public double divide(Quantity<?> other) {
 			return performBaseArithmetic(other, ArithmeticOperation.DIVIDE);
 		}
-
-		// =========================================================
-		// EQUALS / HASHCODE / TOSTRING
-		// =========================================================
 
 		@Override
 		public boolean equals(Object obj) {
