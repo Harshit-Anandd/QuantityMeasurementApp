@@ -2,15 +2,15 @@ package com.apps.quantitymeasurement.model;
 
 public interface IMeasurable {
 
-	double convertToBaseUnit(double value);
+    double convertToBaseUnit(double value);
 
-	double convertFromBaseUnit(double baseValue);
+    double convertFromBaseUnit(double baseValue);
 
-	double getConversionFactor();
+    double getConversionFactor();
 
-	String getUnitName();
+    String getUnitName();
 
-	default boolean supportsArithmetic() {
-		return true;
-	}
+    default boolean supportsArithmetic() {
+        return true;
+    }
 }
