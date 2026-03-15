@@ -1,190 +1,134 @@
 package com.apps.quantitymeasurement.app;
 
+import com.apps.quantitymeasurement.config.ApplicationConfig;
 import com.apps.quantitymeasurement.controller.QuantityMeasurementController;
 import com.apps.quantitymeasurement.dto.QuantityDTO;
 import com.apps.quantitymeasurement.model.*;
-import com.apps.quantitymeasurement.service.QuantityMeasurementServiceImpl;
 
 import java.util.Scanner;
 
 public class QuantityMeasurementApp {
 
-	private static final Scanner scanner = new Scanner(System.in);
+    private static final Scanner sc = new Scanner(System.in);
 
-	public static void main(String[] args) {
+    public static void main(String[] args) {
 
-		
-		QuantityMeasurementServiceImpl service =
-				new QuantityMeasurementServiceImpl();
+        QuantityMeasurementController controller =
+                ApplicationConfig.getController();
 
-		QuantityMeasurementController controller =
-				new QuantityMeasurementController(service);
+        while (true) {
 
-		boolean running = true;
+            System.out.println("\n===== Quantity Measurement System =====");
+            System.out.println("1 Compare");
+            System.out.println("2 Add");
+            System.out.println("3 Subtract");
+            System.out.println("4 Divide");
+            System.out.println("5 Exit");
 
-		while (running) {
+            int choice = sc.nextInt();
 
-			System.out.println("\n===== Quantity Measurement System =====");
-			System.out.println("1. Compare Quantities");
-			System.out.println("2. Add Quantities");
-			System.out.println("3. Subtract Quantities");
-			System.out.println("4. Divide Quantities");
-			System.out.println("5. Exit");
-			System.out.print("Select option: ");
+            if (choice == 5) {
+                System.out.println("Exiting...");
+                break;
+            }
 
-			int choice = scanner.nextInt();
+            System.out.println("Enter First Quantity:");
+            QuantityDTO q1 = readQuantity();
 
-			switch (choice) {
+            System.out.println("Enter Second Quantity:");
+            QuantityDTO q2 = readQuantity();
 
-			case 1:
-				compareQuantities(controller);
-				break;
+            try {
 
-			case 2:
-				addQuantities(controller);
-				break;
+                switch (choice) {
 
-			case 3:
-				subtractQuantities(controller);
-				break;
+                    case 1 ->
+                            System.out.println("Result: " + controller.compare(q1, q2));
 
-			case 4:
-				divideQuantities(controller);
-				break;
+                    case 2 ->
+                            System.out.println("Result: " + controller.add(q1, q2));
 
-			case 5:
-				running = false;
-				System.out.println("Exiting application...");
-				break;
+                    case 3 ->
+                            System.out.println("Result: " + controller.subtract(q1, q2));
 
-			default:
-				System.out.println("Invalid option.");
-			}
-		}
-	}
+                    case 4 ->
+                            System.out.println("Result: " + controller.divide(q1, q2));
 
-	private static QuantityDTO readQuantity() {
+                    default ->
+                            System.out.println("Invalid option");
+                }
 
-		System.out.println("\nSelect Measurement Type:");
-		System.out.println("1. Length");
-		System.out.println("2. Weight");
-		System.out.println("3. Volume");
-		System.out.println("4. Temperature");
+            } catch (Exception e) {
+                System.out.println("Error: " + e.getMessage());
+            }
+        }
+    }
 
-		int type = scanner.nextInt();
+    private static QuantityDTO readQuantity() {
 
-		System.out.print("Enter value: ");
-		double value = scanner.nextDouble();
+        System.out.println("Select Measurement Type:");
+        System.out.println("1 Length");
+        System.out.println("2 Weight");
+        System.out.println("3 Volume");
+        System.out.println("4 Temperature");
 
-		switch (type) {
+        int type = sc.nextInt();
 
-		case 1:
-			System.out.println("Units: 1.FEET 2.INCH 3.YARD 4.CENTIMETER");
-			int l = scanner.nextInt();
+        System.out.print("Enter value: ");
+        double value = sc.nextDouble();
 
-			LengthUnit lengthUnit = switch (l) {
-			case 1 -> LengthUnit.FEET;
-			case 2 -> LengthUnit.INCH;
-			case 3 -> LengthUnit.YARD;
-			case 4 -> LengthUnit.CENTIMETER;
-			default -> throw new IllegalArgumentException("Invalid unit");
-			};
+        switch (type) {
 
-			return new QuantityDTO(value, lengthUnit);
+            case 1 -> {
+                System.out.println("Units: 1 FEET, 2 INCH, 3 YARD, 4 CENTIMETER");
+                int unit = sc.nextInt();
 
-		case 2:
-			System.out.println("Units: 1.KILOGRAM 2.GRAM 3.POUND");
-			int w = scanner.nextInt();
+                return switch (unit) {
+                    case 1 -> new QuantityDTO(value, LengthUnit.FEET);
+                    case 2 -> new QuantityDTO(value, LengthUnit.INCH);
+                    case 3 -> new QuantityDTO(value, LengthUnit.YARD);
+                    case 4 -> new QuantityDTO(value, LengthUnit.CENTIMETER);
+                    default -> throw new IllegalArgumentException("Invalid unit");
+                };
+            }
 
-			WeightUnit weightUnit = switch (w) {
-			case 1 -> WeightUnit.KILOGRAM;
-			case 2 -> WeightUnit.GRAM;
-			case 3 -> WeightUnit.POUND;
-			default -> throw new IllegalArgumentException("Invalid unit");
-			};
+            case 2 -> {
+                System.out.println("Units: 1 KILOGRAM, 2 GRAM, 3 POUND");
+                int unit = sc.nextInt();
 
-			return new QuantityDTO(value, weightUnit);
+                return switch (unit) {
+                    case 1 -> new QuantityDTO(value, WeightUnit.KILOGRAM);
+                    case 2 -> new QuantityDTO(value, WeightUnit.GRAM);
+                    case 3 -> new QuantityDTO(value, WeightUnit.POUND);
+                    default -> throw new IllegalArgumentException("Invalid unit");
+                };
+            }
 
-		case 3:
-			System.out.println("Units: 1.LITRE 2.MILLILITRE 3.GALLON");
-			int v = scanner.nextInt();
+            case 3 -> {
+                System.out.println("Units: 1 LITRE, 2 MILLILITRE, 3 GALLON");
+                int unit = sc.nextInt();
 
-			VolumeUnit volumeUnit = switch (v) {
-			case 1 -> VolumeUnit.LITRE;
-			case 2 -> VolumeUnit.MILLILITRE;
-			case 3 -> VolumeUnit.GALLON;
-			default -> throw new IllegalArgumentException("Invalid unit");
-			};
+                return switch (unit) {
+                    case 1 -> new QuantityDTO(value, VolumeUnit.LITRE);
+                    case 2 -> new QuantityDTO(value, VolumeUnit.MILLILITRE);
+                    case 3 -> new QuantityDTO(value, VolumeUnit.GALLON);
+                    default -> throw new IllegalArgumentException("Invalid unit");
+                };
+            }
 
-			return new QuantityDTO(value, volumeUnit);
+            case 4 -> {
+                System.out.println("Units: 1 KELVIN, 2 CELSIUS, 3 FAHRENHEIT");
+                int unit = sc.nextInt();
 
-		case 4:
-			System.out.println("Units: 1.KELVIN 2.CELSIUS 3.FAHRENHEIT");
-			int t = scanner.nextInt();
+                return switch (unit) {
+                    case 1 -> new QuantityDTO(value, TemperatureUnit.KELVIN);
+                    case 2 -> new QuantityDTO(value, TemperatureUnit.CELSIUS);
+                    case 3 -> new QuantityDTO(value, TemperatureUnit.FAHRENHEIT);
+                    default -> throw new IllegalArgumentException("Invalid unit");
+                };
+            }
 
-			TemperatureUnit temperatureUnit = switch (t) {
-			case 1 -> TemperatureUnit.KELVIN;
-			case 2 -> TemperatureUnit.CELSIUS;
-			case 3 -> TemperatureUnit.FAHRENHEIT;
-			default -> throw new IllegalArgumentException("Invalid unit");
-			};
-
-			return new QuantityDTO(value, temperatureUnit);
-
-		default:
-			throw new IllegalArgumentException("Invalid measurement type");
-		}
-	}
-
-	private static void compareQuantities(QuantityMeasurementController controller) {
-
-		System.out.println("\nEnter First Quantity");
-		QuantityDTO q1 = readQuantity();
-
-		System.out.println("\nEnter Second Quantity");
-		QuantityDTO q2 = readQuantity();
-
-		boolean result = controller.compare(q1, q2);
-
-		System.out.println("Comparison Result: " + result);
-	}
-
-	private static void addQuantities(QuantityMeasurementController controller) {
-
-		System.out.println("\nEnter First Quantity");
-		QuantityDTO q1 = readQuantity();
-
-		System.out.println("\nEnter Second Quantity");
-		QuantityDTO q2 = readQuantity();
-
-		double result = controller.add(q1, q2);
-
-		System.out.println("Addition Result (Base Unit): " + result);
-	}
-
-	private static void subtractQuantities(QuantityMeasurementController controller) {
-
-		System.out.println("\nEnter First Quantity");
-		QuantityDTO q1 = readQuantity();
-
-		System.out.println("\nEnter Second Quantity");
-		QuantityDTO q2 = readQuantity();
-
-		double result = controller.subtract(q1, q2);
-
-		System.out.println("Subtraction Result (Base Unit): " + result);
-	}
-
-	private static void divideQuantities(QuantityMeasurementController controller) {
-
-		System.out.println("\nEnter First Quantity");
-		QuantityDTO q1 = readQuantity();
-
-		System.out.println("\nEnter Second Quantity");
-		QuantityDTO q2 = readQuantity();
-
-		double result = controller.divide(q1, q2);
-
-		System.out.println("Division Result: " + result);
-	}
+            default -> throw new IllegalArgumentException("Invalid measurement type");
+        }
+    }
 }
