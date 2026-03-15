@@ -10,12 +10,12 @@ public class Quantity<U extends IMeasurable> {
 		this.unit = unit;
 	}
 
-	public double getValue() {
-		return value;
+	public double getValue() { 
+		return value; 
 	}
 
-	public U getUnit() {
-		return unit;
+	public U getUnit() { 
+		return unit; 
 	}
 
 	public double toBase() {
