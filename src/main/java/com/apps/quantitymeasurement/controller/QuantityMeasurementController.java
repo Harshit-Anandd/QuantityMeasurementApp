@@ -14,18 +14,18 @@ public class QuantityMeasurementController {
 	}
 
 	public boolean compare(QuantityDTO q1, QuantityDTO q2) {
-		return service.compare(q1, q2);
+		return service.compare(q1,q2);
 	}
 
 	public double add(QuantityDTO q1, QuantityDTO q2) {
-		return service.add(q1, q2);
+		return service.add(q1,q2);
 	}
 
 	public double subtract(QuantityDTO q1, QuantityDTO q2) {
-		return service.subtract(q1, q2);
+		return service.subtract(q1,q2);
 	}
 
 	public double divide(QuantityDTO q1, QuantityDTO q2) {
-		return service.divide(q1, q2);
+		return service.divide(q1,q2);
 	}
 }
