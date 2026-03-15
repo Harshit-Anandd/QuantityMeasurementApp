@@ -12,11 +12,10 @@ public class QuantityDTO {
 		this.unit = unit;
 	}
 
-	public double getValue() {
-		return value;
+	public double getValue() { 
+		return value; 
 	}
-
-	public IMeasurable getUnit() {
-		return unit;
+	public IMeasurable getUnit() { 
+		return unit; 
 	}
 }
