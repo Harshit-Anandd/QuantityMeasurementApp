@@ -1,337 +1,312 @@
 package com.apps.quantitymeasurement;
 
+import com.apps.quantitymeasurement.dto.QuantityDTO;
+import com.apps.quantitymeasurement.model.*;
+import com.apps.quantitymeasurement.service.QuantityMeasurementServiceImpl;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.*;
 
-import com.apps.quantitymeasurement.QuantityMeasurementApp.*;
-
-public class QuantityMeasurementAppTest {
-
-    private static final double EPSILON = 0.0001;
-
-    // =========================================================
-    // 1–7: Equality Tests
-    // =========================================================
-
-    @Test
-    void testTemperatureEquality_CelsiusToCelsius_SameValue() {
-        assertEquals(
-                new Quantity<>(0.0, TemperatureUnit.CELSIUS),
-                new Quantity<>(0.0, TemperatureUnit.CELSIUS)
-        );
-    }
-
-    @Test
-    void testTemperatureEquality_FahrenheitToFahrenheit_SameValue() {
-        assertEquals(
-                new Quantity<>(32.0, TemperatureUnit.FAHRENHEIT),
-                new Quantity<>(32.0, TemperatureUnit.FAHRENHEIT)
-        );
-    }
-
-    @Test
-    void testTemperatureEquality_CelsiusToFahrenheit_0Celsius32Fahrenheit() {
-        assertEquals(
-                new Quantity<>(0.0, TemperatureUnit.CELSIUS),
-                new Quantity<>(32.0, TemperatureUnit.FAHRENHEIT)
-        );
-    }
-
-    @Test
-    void testTemperatureEquality_CelsiusToFahrenheit_100Celsius212Fahrenheit() {
-        assertEquals(
-                new Quantity<>(100.0, TemperatureUnit.CELSIUS),
-                new Quantity<>(212.0, TemperatureUnit.FAHRENHEIT)
-        );
-    }
-
-    @Test
-    void testTemperatureEquality_CelsiusToFahrenheit_Negative40Equal() {
-        assertEquals(
-                new Quantity<>(-40.0, TemperatureUnit.CELSIUS),
-                new Quantity<>(-40.0, TemperatureUnit.FAHRENHEIT)
-        );
-    }
-
-    @Test
-    void testTemperatureEquality_SymmetricProperty() {
-        Quantity<TemperatureUnit> a =
-                new Quantity<>(0.0, TemperatureUnit.CELSIUS);
-        Quantity<TemperatureUnit> b =
-                new Quantity<>(32.0, TemperatureUnit.FAHRENHEIT);
-
-        assertTrue(a.equals(b));
-        assertTrue(b.equals(a));
-    }
-
-    @Test
-    void testTemperatureEquality_ReflexiveProperty() {
-        Quantity<TemperatureUnit> temp =
-                new Quantity<>(25.0, TemperatureUnit.CELSIUS);
-
-        assertEquals(temp, temp);
-    }
-
-    // =========================================================
-    // 8–14: Conversion Tests
-    // =========================================================
-
-    @Test
-    void testTemperatureConversion_CelsiusToFahrenheit_VariousValues() {
-
-        Quantity<TemperatureUnit> temp =
-                new Quantity<>(50.0, TemperatureUnit.CELSIUS);
-
-        double result =
-                TemperatureUnit.FAHRENHEIT.convertFromBaseUnit(
-                        temp.getUnit().convertToBaseUnit(temp.getValue())
-                );
-
-        assertEquals(122.0, result, EPSILON);
-    }
-
-    @Test
-    void testTemperatureConversion_FahrenheitToCelsius_VariousValues() {
-
-        Quantity<TemperatureUnit> temp =
-                new Quantity<>(122.0, TemperatureUnit.FAHRENHEIT);
-
-        double result =
-                TemperatureUnit.CELSIUS.convertFromBaseUnit(
-                        temp.getUnit().convertToBaseUnit(temp.getValue())
-                );
-
-        assertEquals(50.0, result, EPSILON);
-    }
-
-    @Test
-    void testTemperatureConversion_RoundTrip_PreservesValue() {
-
-        double original = 75.0;
-
-        double base =
-                TemperatureUnit.CELSIUS.convertToBaseUnit(original);
-
-        double converted =
-                TemperatureUnit.FAHRENHEIT.convertFromBaseUnit(base);
-
-        double roundTrip =
-                TemperatureUnit.CELSIUS.convertFromBaseUnit(
-                        TemperatureUnit.FAHRENHEIT.convertToBaseUnit(converted)
-                );
-
-        assertEquals(original, roundTrip, EPSILON);
-    }
-
-    @Test
-    void testTemperatureConversion_SameUnit() {
-        double value = 30.0;
-
-        double base =
-                TemperatureUnit.CELSIUS.convertToBaseUnit(value);
-
-        double result =
-                TemperatureUnit.CELSIUS.convertFromBaseUnit(base);
-
-        assertEquals(value, result, EPSILON);
-    }
-
-    @Test
-    void testTemperatureConversion_ZeroValue() {
-        assertEquals(
-                32.0,
-                TemperatureUnit.FAHRENHEIT.convertFromBaseUnit(
-                        TemperatureUnit.CELSIUS.convertToBaseUnit(0.0)
-                ),
-                EPSILON
-        );
-    }
-
-    @Test
-    void testTemperatureConversion_NegativeValues() {
-        assertEquals(
-                -4.0,
-                TemperatureUnit.FAHRENHEIT.convertFromBaseUnit(
-                        TemperatureUnit.CELSIUS.convertToBaseUnit(-20.0)
-                ),
-                EPSILON
-        );
-    }
-
-    @Test
-    void testTemperatureConversion_LargeValues() {
-        assertEquals(
-                1832.0,
-                TemperatureUnit.FAHRENHEIT.convertFromBaseUnit(
-                        TemperatureUnit.CELSIUS.convertToBaseUnit(1000.0)
-                ),
-                EPSILON
-        );
-    }
-
-    // =========================================================
-    // 15–18: Unsupported Operations
-    // =========================================================
-
-    @Test
-    void testTemperatureUnsupportedOperation_Add() {
-
-        Quantity<TemperatureUnit> t1 =
-                new Quantity<>(100.0, TemperatureUnit.CELSIUS);
-        Quantity<TemperatureUnit> t2 =
-                new Quantity<>(50.0, TemperatureUnit.CELSIUS);
-
-        UnsupportedOperationException ex =
-                assertThrows(UnsupportedOperationException.class,
-                        () -> t1.add(t2));
-
-        assertTrue(ex.getMessage()
-                .contains("Arithmetic operations are not supported"));
-    }
-
-    @Test
-    void testTemperatureUnsupportedOperation_Subtract() {
-        assertThrows(UnsupportedOperationException.class,
-                () -> new Quantity<>(100.0, TemperatureUnit.CELSIUS)
-                        .subtract(new Quantity<>(50.0, TemperatureUnit.CELSIUS)));
-    }
-
-    @Test
-    void testTemperatureUnsupportedOperation_Divide() {
-        assertThrows(UnsupportedOperationException.class,
-                () -> new Quantity<>(100.0, TemperatureUnit.CELSIUS)
-                        .divide(new Quantity<>(50.0, TemperatureUnit.CELSIUS)));
-    }
-
-    @Test
-    void testTemperatureUnsupportedOperation_ErrorMessage() {
-        UnsupportedOperationException ex =
-                assertThrows(UnsupportedOperationException.class,
-                        () -> new Quantity<>(1.0, TemperatureUnit.CELSIUS)
-                                .add(new Quantity<>(1.0, TemperatureUnit.CELSIUS)));
-
-        assertNotNull(ex.getMessage());
-    }
-
-    // =========================================================
-    // 19–21: Category Incompatibility
-    // =========================================================
-
-    @Test
-    void testTemperatureVsLengthIncompatibility() {
-        assertNotEquals(
-                new Quantity<>(100.0, TemperatureUnit.CELSIUS),
-                new Quantity<>(100.0, LengthUnit.FEET)
-        );
-    }
-
-    @Test
-    void testTemperatureVsWeightIncompatibility() {
-        assertNotEquals(
-                new Quantity<>(50.0, TemperatureUnit.CELSIUS),
-                new Quantity<>(50.0, WeightUnit.KILOGRAM)
-        );
-    }
-
-    @Test
-    void testTemperatureVsVolumeIncompatibility() {
-        assertNotEquals(
-                new Quantity<>(25.0, TemperatureUnit.CELSIUS),
-                new Quantity<>(25.0, VolumeUnit.LITRE)
-        );
-    }
-
-    // =========================================================
-    // 22–25: Operation Support Methods
-    // =========================================================
-
-    @Test
-    void testOperationSupportMethods_TemperatureUnitAddition() {
-        assertFalse(TemperatureUnit.CELSIUS.supportsArithmetic());
-    }
-
-    @Test
-    void testOperationSupportMethods_TemperatureUnitDivision() {
-        assertFalse(TemperatureUnit.FAHRENHEIT.supportsArithmetic());
-    }
-
-    @Test
-    void testOperationSupportMethods_LengthUnitAddition() {
-        assertTrue(LengthUnit.FEET.supportsArithmetic());
-    }
-
-    @Test
-    void testOperationSupportMethods_WeightUnitDivision() {
-        assertTrue(WeightUnit.KILOGRAM.supportsArithmetic());
-    }
-
-    // =========================================================
-    // 26–41: Interface & Integration Validation
-    // =========================================================
-
-    @Test
-    void testTemperatureEnumImplementsMeasurable() {
-        assertTrue(IMeasurable.class
-                .isAssignableFrom(TemperatureUnit.class));
-    }
-
-    @Test
-    void testTemperatureUnit_AllConstants() {
-        assertNotNull(TemperatureUnit.CELSIUS);
-        assertNotNull(TemperatureUnit.FAHRENHEIT);
-        assertNotNull(TemperatureUnit.KELVIN);
-    }
-
-    @Test
-    void testTemperatureUnit_NameMethod() {
-        assertEquals("CELSIUS",
-                TemperatureUnit.CELSIUS.getUnitName());
-    }
-
-    @Test
-    void testTemperatureUnit_ConversionFactor() {
-        assertThrows(UnsupportedOperationException.class,
-                () -> TemperatureUnit.CELSIUS.getConversionFactor());
-    }
-
-    @Test
-    void testTemperatureNullUnitValidation() {
-        assertThrows(IllegalArgumentException.class,
-                () -> new Quantity<>(100.0, null));
-    }
-
-    @Test
-    void testTemperatureNullOperandValidation_InComparison() {
-        Quantity<TemperatureUnit> temp =
-                new Quantity<>(100.0, TemperatureUnit.CELSIUS);
-
-        assertFalse(temp.equals(null));
-    }
-
-    @Test
-    void testTemperatureDifferentValuesInequality() {
-        assertNotEquals(
-                new Quantity<>(50.0, TemperatureUnit.CELSIUS),
-                new Quantity<>(100.0, TemperatureUnit.CELSIUS)
-        );
-    }
-
-    @Test
-    void testTemperatureConversionPrecision_Epsilon() {
-        Quantity<TemperatureUnit> t1 =
-                new Quantity<>(0.0, TemperatureUnit.CELSIUS);
-        Quantity<TemperatureUnit> t2 =
-                new Quantity<>(32.00001, TemperatureUnit.FAHRENHEIT);
-
-        assertEquals(t1, t2);
-    }
-
-    @Test
-    void testTemperatureIntegrationWithGenericQuantity() {
-        Quantity<TemperatureUnit> temp =
-                new Quantity<>(25.0, TemperatureUnit.CELSIUS);
-
-        assertEquals(25.0, temp.getValue());
-        assertEquals(TemperatureUnit.CELSIUS, temp.getUnit());
-    }
+class QuantityMeasurementServiceTest {
+
+	private QuantityMeasurementServiceImpl service;
+	private static final double EPSILON = 0.0001;
+
+	@BeforeEach
+	void setup() {
+		service = new QuantityMeasurementServiceImpl();
+	}
+
+	// =====================================================
+	// UC1 – Equality (same unit)
+	// =====================================================
+
+	@Test
+	void given0FeetAnd0Feet_ShouldReturnTrue() {
+		assertTrue(service.compare(new QuantityDTO(0, LengthUnit.FEET),
+				new QuantityDTO(0, LengthUnit.FEET)));
+	}
+
+	@Test
+	void given1FeetAnd1Feet_ShouldReturnTrue() {
+		assertTrue(service.compare(new QuantityDTO(1, LengthUnit.FEET),
+				new QuantityDTO(1, LengthUnit.FEET)));
+	}
+
+	@Test
+	void given1FeetAnd2Feet_ShouldReturnFalse() {
+		assertFalse(service.compare(new QuantityDTO(1, LengthUnit.FEET),
+				new QuantityDTO(2, LengthUnit.FEET)));
+	}
+
+	// =====================================================
+	// UC2 – Null handling
+	// =====================================================
+
+	@Test
+	void givenNullLeftQuantity_ShouldThrowException() {
+		assertThrows(NullPointerException.class, () ->
+		service.compare(null, new QuantityDTO(1, LengthUnit.FEET)));
+	}
+
+	@Test
+	void givenNullRightQuantity_ShouldThrowException() {
+		assertThrows(NullPointerException.class, () ->
+		service.compare(new QuantityDTO(1, LengthUnit.FEET), null));
+	}
+
+	// =====================================================
+	// UC3 – Reference equality
+	// =====================================================
+
+	@Test
+	void givenSameReference_ShouldReturnTrue() {
+		QuantityDTO q = new QuantityDTO(5, LengthUnit.FEET);
+		assertTrue(service.compare(q, q));
+	}
+
+	// =====================================================
+	// UC4 – Type safety
+	// =====================================================
+
+	@Test
+	void givenLengthAndWeight_ShouldReturnFalse() {
+		assertFalse(service.compare(
+				new QuantityDTO(1, LengthUnit.FEET),
+				new QuantityDTO(1, WeightUnit.KILOGRAM)));
+	}
+
+	// =====================================================
+	// UC5 – Feet / Inch conversion
+	// =====================================================
+
+	@Test
+	void given1FootAnd12Inch_ShouldReturnTrue() {
+		assertTrue(service.compare(
+				new QuantityDTO(1, LengthUnit.FEET),
+				new QuantityDTO(12, LengthUnit.INCH)));
+	}
+
+	@Test
+	void given2FeetAnd24Inch_ShouldReturnTrue() {
+		assertTrue(service.compare(
+				new QuantityDTO(2, LengthUnit.FEET),
+				new QuantityDTO(24, LengthUnit.INCH)));
+	}
+
+	@Test
+	void given1FootAnd6Inch_ShouldReturnFalse() {
+		assertFalse(service.compare(
+				new QuantityDTO(1, LengthUnit.FEET),
+				new QuantityDTO(6, LengthUnit.INCH)));
+	}
+
+	// =====================================================
+	// UC6 – Yard conversion
+	// =====================================================
+
+	@Test
+	void given1YardAnd3Feet_ShouldReturnTrue() {
+		assertTrue(service.compare(
+				new QuantityDTO(1, LengthUnit.YARD),
+				new QuantityDTO(3, LengthUnit.FEET)));
+	}
+
+	@Test
+	void given2YardAnd6Feet_ShouldReturnTrue() {
+		assertTrue(service.compare(
+				new QuantityDTO(2, LengthUnit.YARD),
+				new QuantityDTO(6, LengthUnit.FEET)));
+	}
+
+	@Test
+	void given1YardAnd2Feet_ShouldReturnFalse() {
+		assertFalse(service.compare(
+				new QuantityDTO(1, LengthUnit.YARD),
+				new QuantityDTO(2, LengthUnit.FEET)));
+	}
+
+	// =====================================================
+	// UC7 – Centimeter conversion
+	// =====================================================
+
+	@Test
+	void given1FootAnd30_48Cm_ShouldReturnTrue() {
+		assertTrue(service.compare(
+				new QuantityDTO(1, LengthUnit.FEET),
+				new QuantityDTO(30.48, LengthUnit.CENTIMETER)));
+	}
+
+	@Test
+	void given2FeetAnd60_96Cm_ShouldReturnTrue() {
+		assertTrue(service.compare(
+				new QuantityDTO(2, LengthUnit.FEET),
+				new QuantityDTO(60.96, LengthUnit.CENTIMETER)));
+	}
+
+	@Test
+	void given1FeetAnd50Cm_ShouldReturnFalse() {
+		assertFalse(service.compare(
+				new QuantityDTO(1, LengthUnit.FEET),
+				new QuantityDTO(50, LengthUnit.CENTIMETER)));
+	}
+
+	// =====================================================
+	// UC8 – Weight conversion
+	// =====================================================
+
+	@Test
+	void given1KgAnd1000Gram_ShouldReturnTrue() {
+		assertTrue(service.compare(
+				new QuantityDTO(1, WeightUnit.KILOGRAM),
+				new QuantityDTO(1000, WeightUnit.GRAM)));
+	}
+
+	@Test
+	void given2KgAnd2000Gram_ShouldReturnTrue() {
+		assertTrue(service.compare(
+				new QuantityDTO(2, WeightUnit.KILOGRAM),
+				new QuantityDTO(2000, WeightUnit.GRAM)));
+	}
+
+	@Test
+	void given1KgAnd500Gram_ShouldReturnFalse() {
+		assertFalse(service.compare(
+				new QuantityDTO(1, WeightUnit.KILOGRAM),
+				new QuantityDTO(500, WeightUnit.GRAM)));
+	}
+
+	// =====================================================
+	// UC9 – Volume conversion
+	// =====================================================
+
+	@Test
+	void given1LitreAnd1000ML_ShouldReturnTrue() {
+		assertTrue(service.compare(
+				new QuantityDTO(1, VolumeUnit.LITRE),
+				new QuantityDTO(1000, VolumeUnit.MILLILITRE)));
+	}
+
+	@Test
+	void given2LitreAnd2000ML_ShouldReturnTrue() {
+		assertTrue(service.compare(
+				new QuantityDTO(2, VolumeUnit.LITRE),
+				new QuantityDTO(2000, VolumeUnit.MILLILITRE)));
+	}
+
+	@Test
+	void given1LitreAnd500ML_ShouldReturnFalse() {
+		assertFalse(service.compare(
+				new QuantityDTO(1, VolumeUnit.LITRE),
+				new QuantityDTO(500, VolumeUnit.MILLILITRE)));
+	}
+
+	@Test
+	void given1GallonAnd3_78541Litre_ShouldReturnTrue() {
+		assertTrue(service.compare(
+				new QuantityDTO(1, VolumeUnit.GALLON),
+				new QuantityDTO(3.78541, VolumeUnit.LITRE)));
+	}
+
+	// =====================================================
+	// UC10 – Addition
+	// =====================================================
+
+	@Test
+	void given1FootAnd2Feet_WhenAdded_ShouldReturn3() {
+		assertEquals(3, service.add(
+				new QuantityDTO(1, LengthUnit.FEET),
+				new QuantityDTO(2, LengthUnit.FEET)), EPSILON);
+	}
+
+	@Test
+	void given1FootAnd12Inch_WhenAdded_ShouldReturn2() {
+		assertEquals(2, service.add(
+				new QuantityDTO(1, LengthUnit.FEET),
+				new QuantityDTO(12, LengthUnit.INCH)), EPSILON);
+	}
+
+	@Test
+	void given1LitreAnd500ML_WhenAdded_ShouldReturn1_5() {
+		assertEquals(1.5, service.add(
+				new QuantityDTO(1, VolumeUnit.LITRE),
+				new QuantityDTO(500, VolumeUnit.MILLILITRE)), EPSILON);
+	}
+
+	// =====================================================
+	// UC11 – Subtraction
+	// =====================================================
+
+	@Test
+	void given3FeetAnd1Feet_WhenSubtracted_ShouldReturn2() {
+		assertEquals(2, service.subtract(
+				new QuantityDTO(3, LengthUnit.FEET),
+				new QuantityDTO(1, LengthUnit.FEET)), EPSILON);
+	}
+
+	@Test
+	void given2FeetAnd24Inch_WhenSubtracted_ShouldReturn0() {
+		assertEquals(0, service.subtract(
+				new QuantityDTO(2, LengthUnit.FEET),
+				new QuantityDTO(24, LengthUnit.INCH)), EPSILON);
+	}
+
+	// =====================================================
+	// UC12 – Division
+	// =====================================================
+
+	@Test
+	void given4FeetAnd2Feet_WhenDivided_ShouldReturn2() {
+		assertEquals(2, service.divide(
+				new QuantityDTO(4, LengthUnit.FEET),
+				new QuantityDTO(2, LengthUnit.FEET)), EPSILON);
+	}
+
+	@Test
+	void given10LitreAnd2Litre_WhenDivided_ShouldReturn5() {
+		assertEquals(5, service.divide(
+				new QuantityDTO(10, VolumeUnit.LITRE),
+				new QuantityDTO(2, VolumeUnit.LITRE)), EPSILON);
+	}
+
+	// =====================================================
+	// UC14 – Temperature conversion
+	// =====================================================
+
+	@Test
+	void given0CelsiusAnd273_15Kelvin_ShouldReturnTrue() {
+		assertTrue(service.compare(
+				new QuantityDTO(0, TemperatureUnit.CELSIUS),
+				new QuantityDTO(273.15, TemperatureUnit.KELVIN)));
+	}
+
+	@Test
+	void given32FahrenheitAnd0Celsius_ShouldReturnTrue() {
+		assertTrue(service.compare(
+				new QuantityDTO(32, TemperatureUnit.FAHRENHEIT),
+				new QuantityDTO(0, TemperatureUnit.CELSIUS)));
+	}
+
+	@Test
+	void given212FahrenheitAnd100Celsius_ShouldReturnTrue() {
+		assertTrue(service.compare(
+				new QuantityDTO(212, TemperatureUnit.FAHRENHEIT),
+				new QuantityDTO(100, TemperatureUnit.CELSIUS)));
+	}
+
+	@Test
+	void given100CelsiusAnd373_15Kelvin_ShouldReturnTrue() {
+		assertTrue(service.compare(
+				new QuantityDTO(100, TemperatureUnit.CELSIUS),
+				new QuantityDTO(373.15, TemperatureUnit.KELVIN)));
+	}
+
+	@Test
+	void given50CelsiusAnd100Celsius_ShouldReturnFalse() {
+		assertFalse(service.compare(
+				new QuantityDTO(50, TemperatureUnit.CELSIUS),
+				new QuantityDTO(100, TemperatureUnit.CELSIUS)));
+	}
+
 }
