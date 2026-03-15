@@ -21,11 +21,11 @@ public enum LengthUnit implements IMeasurable {
 		return baseValue / factor;
 	}
 
-	public double getConversionFactor() {
-		return factor;
+	public double getConversionFactor() { 
+		return factor; 
 	}
 
-	public String getUnitName() {
-		return name();
+	public String getUnitName() { 
+		return name(); 
 	}
 }
