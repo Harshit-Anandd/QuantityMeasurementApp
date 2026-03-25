@@ -9,7 +9,7 @@ public interface IMeasurable {
     double getConversionFactor();
 
     String getUnitName();
-
+    
     default boolean supportsArithmetic() {
         return true;
     }
