@@ -1,11 +1,14 @@
 package com.app.quantitymeasurement.model;
 
-import lombok.Data;
-import java.util.List;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.app.quantitymeasurement.model.QuantityMeasurementEntity;
+import java.util.List;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class QuantityMeasurementDTO {
 
     public double thisValue;
@@ -28,7 +31,6 @@ public class QuantityMeasurementDTO {
 
     public String errorMessage;
 
-    // 🔁 ENTITY → DTO
     public static QuantityMeasurementDTO fromEntity(QuantityMeasurementEntity entity) {
         QuantityMeasurementDTO dto = new QuantityMeasurementDTO();
 
@@ -40,7 +42,7 @@ public class QuantityMeasurementDTO {
         dto.thatUnit = entity.thatUnit;
         dto.thatMeasurementType = entity.thatMeasurementType;
 
-        dto.operation = entity.operation;
+        dto.operation = entity.operation == null ? null : entity.operation.toLowerCase();
 
         dto.resultString = entity.resultString;
         dto.resultValue = entity.resultValue;
@@ -53,7 +55,6 @@ public class QuantityMeasurementDTO {
         return dto;
     }
 
-    // 🔁 DTO → ENTITY
     public QuantityMeasurementEntity toEntity() {
         QuantityMeasurementEntity entity = new QuantityMeasurementEntity();
 
@@ -65,7 +66,7 @@ public class QuantityMeasurementDTO {
         entity.thatUnit = this.thatUnit;
         entity.thatMeasurementType = this.thatMeasurementType;
 
-        entity.operation = this.operation;
+        entity.operation = this.operation == null ? null : this.operation.toUpperCase();
 
         entity.resultString = this.resultString;
         entity.resultValue = this.resultValue;
@@ -78,14 +79,12 @@ public class QuantityMeasurementDTO {
         return entity;
     }
 
-    // 🔁 ENTITY LIST → DTO LIST
-    public static List<QuantityMeasurementDTO> fromList(List<QuantityMeasurementEntity> entities) {
+    public static List<QuantityMeasurementDTO> fromEntityList(List<QuantityMeasurementEntity> entities) {
         return entities.stream()
                 .map(QuantityMeasurementDTO::fromEntity)
                 .toList();
     }
 
-    // 🔁 DTO LIST → ENTITY LIST
     public static List<QuantityMeasurementEntity> toEntityList(List<QuantityMeasurementDTO> dtos) {
         return dtos.stream()
                 .map(QuantityMeasurementDTO::toEntity)
