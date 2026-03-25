@@ -6,9 +6,11 @@ import java.time.LocalDateTime;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import com.app.quantitymeasurement.model.QuantityMeasurementEntity;
 
+@Repository
 public interface QuantityMeasurementRepository 
         extends JpaRepository<QuantityMeasurementEntity, Long> {
 
@@ -17,7 +19,7 @@ public interface QuantityMeasurementRepository
     List<QuantityMeasurementEntity> findByThisMeasurementType(String measurementType);
 
     List<QuantityMeasurementEntity> findByCreatedAtAfter(LocalDateTime date);
-
+    
     @Query("SELECT e FROM QuantityMeasurementEntity e WHERE e.operation = :operation AND e.isError = false")
     List<QuantityMeasurementEntity> findSuccessfulOperations(@Param("operation") String operation);
 
