@@ -2,10 +2,12 @@ package com.app.quantitymeasurement.model;
 
 public enum WeightUnit implements IMeasurable {
 
-	KILOGRAM(1),
+	MILLIGRAM(0.000001),
 	GRAM(0.001),
-	POUND(0.453592);
-
+	KILOGRAM(1),
+	POUND(0.453592),
+	TONNE(1000);
+	
 	private final double factor;
 
 	WeightUnit(double factor) {
