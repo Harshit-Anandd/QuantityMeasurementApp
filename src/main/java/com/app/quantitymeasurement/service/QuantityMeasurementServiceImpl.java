@@ -17,6 +17,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class QuantityMeasurementServiceImpl implements IQuantityMeasurementService {
@@ -29,6 +30,7 @@ public class QuantityMeasurementServiceImpl implements IQuantityMeasurementServi
     private QuantityMeasurementRepository repository;
 
     @Override
+    @Transactional(noRollbackFor = Exception.class)
     public QuantityMeasurementDTO compare(QuantityDTO thisQ, QuantityDTO thatQ) {
         try {
             logger.info("Service operation started: compare");
@@ -57,6 +59,7 @@ public class QuantityMeasurementServiceImpl implements IQuantityMeasurementServi
     }
 
     @Override
+    @Transactional(noRollbackFor = Exception.class)
     public QuantityMeasurementDTO convert(QuantityDTO thisQ, QuantityDTO thatQ) {
         try {
             logger.info("Service operation started: convert");
@@ -87,11 +90,13 @@ public class QuantityMeasurementServiceImpl implements IQuantityMeasurementServi
     }
 
     @Override
+    @Transactional(noRollbackFor = Exception.class)
     public QuantityMeasurementDTO add(QuantityDTO thisQ, QuantityDTO thatQ) {
         return this.add(thisQ, thatQ, thisQ);
     }
 
     @Override
+    @Transactional(noRollbackFor = Exception.class)
     public QuantityMeasurementDTO add(QuantityDTO thisQ, QuantityDTO thatQ, QuantityDTO targetUnitDTO) {
         try {
             logger.info("Service operation started: add-with-target-unit");
@@ -125,11 +130,13 @@ public class QuantityMeasurementServiceImpl implements IQuantityMeasurementServi
     }
 
     @Override
+    @Transactional(noRollbackFor = Exception.class)
     public QuantityMeasurementDTO subtract(QuantityDTO thisQ, QuantityDTO thatQ) {
         return this.subtract(thisQ, thatQ, thisQ);
     }
 
     @Override
+    @Transactional(noRollbackFor = Exception.class)
     public QuantityMeasurementDTO subtract(QuantityDTO thisQ, QuantityDTO thatQ, QuantityDTO targetUnitDTO) {
         try {
             logger.info("Service operation started: subtract-with-target-unit");
@@ -163,6 +170,7 @@ public class QuantityMeasurementServiceImpl implements IQuantityMeasurementServi
     }
 
     @Override
+    @Transactional(noRollbackFor = Exception.class)
     public QuantityMeasurementDTO divide(QuantityDTO thisQ, QuantityDTO thatQ) {
         try {
             logger.info("Service operation started: divide");
@@ -196,6 +204,7 @@ public class QuantityMeasurementServiceImpl implements IQuantityMeasurementServi
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<QuantityMeasurementDTO> getOperationHistory(String operation) {
         logger.info(String.format("Service operation started: getOperationHistory for %s", operation));
         String normalizedOperation = normalizeOperation(operation);
@@ -203,12 +212,14 @@ public class QuantityMeasurementServiceImpl implements IQuantityMeasurementServi
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<QuantityMeasurementDTO> getMeasurementsByType(String type) {
         logger.info(String.format("Service operation started: getMeasurementsByType for %s", type));
         return QuantityMeasurementDTO.fromEntityList(repository.findByThisMeasurementType(type));
     }
 
     @Override
+    @Transactional(readOnly = true)
     public long getOperationCount(String operation) {
         logger.info(String.format("Service operation started: getOperationCount for %s", operation));
         String normalizedOperation = normalizeOperation(operation);
@@ -216,6 +227,7 @@ public class QuantityMeasurementServiceImpl implements IQuantityMeasurementServi
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<QuantityMeasurementDTO> getErrorHistory() {
         logger.info("Service operation started: getErrorHistory");
         return QuantityMeasurementDTO.fromEntityList(repository.findByIsErrorTrue());
