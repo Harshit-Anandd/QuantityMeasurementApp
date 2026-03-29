@@ -2,9 +2,12 @@ package com.app.quantitymeasurement;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.app.quantitymeasurement.model.AuthResponse;
+import com.app.quantitymeasurement.model.LoginRequest;
 import com.app.quantitymeasurement.model.QuantityDTO;
 import com.app.quantitymeasurement.model.QuantityInputDTO;
 import com.app.quantitymeasurement.model.QuantityMeasurementDTO;
+import com.app.quantitymeasurement.model.RegisterRequest;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.MethodOrderer;
@@ -37,6 +40,10 @@ import org.springframework.test.context.TestPropertySource;
 })
 class QuantityMeasurementApplicationTests {
 
+    private static final String TEST_USER_EMAIL = "integration.tester@quantity.app";
+    private static final String TEST_USER_PASSWORD = "StrongPass123!";
+    private static String bearerToken;
+
     @LocalServerPort
     private int port;
 
@@ -45,6 +52,10 @@ class QuantityMeasurementApplicationTests {
 
     private String baseUrl() {
         return "http://localhost:" + port + "/api/v1/quantities";
+    }
+
+    private String authBaseUrl() {
+        return "http://localhost:" + port + "/api/v1/auth";
     }
 
     private QuantityInputDTO input(
@@ -70,7 +81,52 @@ class QuantityMeasurementApplicationTests {
     private HttpEntity<QuantityInputDTO> jsonEntity(QuantityInputDTO body) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(getBearerToken());
         return new HttpEntity<>(body, headers);
+    }
+
+    private <T> ResponseEntity<T> authorizedGet(String url, Class<T> responseType) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(getBearerToken());
+        return restTemplate.exchange(url, HttpMethod.GET, new HttpEntity<>(headers), responseType);
+    }
+
+    private String getBearerToken() {
+        if (bearerToken != null && !bearerToken.isBlank()) {
+            return bearerToken;
+        }
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        RegisterRequest registerRequest = new RegisterRequest();
+        registerRequest.fullName = "Integration Tester";
+        registerRequest.email = TEST_USER_EMAIL;
+        registerRequest.password = TEST_USER_PASSWORD;
+
+        ResponseEntity<String> registerResponse = restTemplate.postForEntity(
+                authBaseUrl() + "/register",
+                new HttpEntity<>(registerRequest, headers),
+                String.class);
+
+        assertThat(registerResponse.getStatusCode().is2xxSuccessful()
+                || registerResponse.getStatusCode() == HttpStatus.CONFLICT).isTrue();
+
+        LoginRequest loginRequest = new LoginRequest();
+        loginRequest.email = TEST_USER_EMAIL;
+        loginRequest.password = TEST_USER_PASSWORD;
+
+        ResponseEntity<AuthResponse> loginResponse = restTemplate.postForEntity(
+                authBaseUrl() + "/login",
+                new HttpEntity<>(loginRequest, headers),
+                AuthResponse.class);
+
+        assertThat(loginResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(loginResponse.getBody()).isNotNull();
+        assertThat(loginResponse.getBody().accessToken).isNotBlank();
+
+        bearerToken = loginResponse.getBody().accessToken;
+        return bearerToken;
     }
 
     @Test
@@ -261,7 +317,7 @@ class QuantityMeasurementApplicationTests {
     @Order(12)
     @DisplayName("GET /history/operation/CONVERT returns history")
     void testGetHistoryByOperationConvert() {
-        ResponseEntity<List> response = restTemplate.getForEntity(
+        ResponseEntity<List> response = authorizedGet(
                 baseUrl() + "/history/operation/CONVERT", List.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -273,7 +329,7 @@ class QuantityMeasurementApplicationTests {
     @Order(13)
     @DisplayName("GET /history/type/TemperatureUnit returns history")
     void testGetHistoryByTypeTemperature() {
-        ResponseEntity<List> response = restTemplate.getForEntity(
+        ResponseEntity<List> response = authorizedGet(
                 baseUrl() + "/history/type/TemperatureUnit", List.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -285,7 +341,7 @@ class QuantityMeasurementApplicationTests {
     @Order(14)
     @DisplayName("GET /count/DIVIDE returns count > 0")
     void testGetOperationCountDivide() {
-        ResponseEntity<Long> response = restTemplate.getForEntity(
+        ResponseEntity<Long> response = authorizedGet(
                 baseUrl() + "/count/DIVIDE", Long.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -308,7 +364,7 @@ class QuantityMeasurementApplicationTests {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR);
         assertThat(response.getBody()).contains("Divide by zero");
 
-        ResponseEntity<List> errorHistoryResponse = restTemplate.getForEntity(
+        ResponseEntity<List> errorHistoryResponse = authorizedGet(
                 baseUrl() + "/history/errored", List.class);
 
         assertThat(errorHistoryResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
@@ -409,6 +465,7 @@ class QuantityMeasurementApplicationTests {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         headers.setAccept(List.of(MediaType.APPLICATION_XML));
+        headers.setBearerAuth(getBearerToken());
 
         ResponseEntity<String> response = restTemplate.exchange(
                 baseUrl() + "/compare",
