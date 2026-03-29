@@ -33,7 +33,7 @@ import org.springframework.test.context.TestPropertySource;
         "spring.jpa.database-platform=org.hibernate.dialect.H2Dialect",
         "spring.jpa.hibernate.ddl-auto=create-drop",
         "spring.jpa.show-sql=false",
-        "spring.h2.console.enabled=false"
+        "spring.h2.console.enabled=true"
 })
 class QuantityMeasurementApplicationTests {
 
@@ -347,5 +347,90 @@ class QuantityMeasurementApplicationTests {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
         assertThat(response.getBody()).contains(
                 "Measurement type must be one of: LengthUnit, VolumeUnit, WeightUnit, TemperatureUnit");
+    }
+
+    @Test
+    @Order(18)
+    @DisplayName("GET /swagger-ui.html loads Swagger UI")
+    void testSwaggerUiLoads() {
+        ResponseEntity<String> response = restTemplate.getForEntity(
+                "http://localhost:" + port + "/swagger-ui.html",
+                String.class);
+
+        assertThat(response.getStatusCode().is2xxSuccessful() || response.getStatusCode().is3xxRedirection()).isTrue();
+    }
+
+    @Test
+    @Order(19)
+    @DisplayName("GET /api-docs returns OpenAPI schema")
+    void testOpenApiDocumentationLoads() {
+        ResponseEntity<String> response = restTemplate.getForEntity(
+                "http://localhost:" + port + "/api-docs",
+                String.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody()).contains("\"openapi\"");
+        assertThat(response.getBody()).contains("/api/v1/quantities/compare");
+    }
+
+    @Test
+    @Order(20)
+    @DisplayName("GET /actuator/health returns UP")
+    void testActuatorHealthEndpoint() {
+        ResponseEntity<String> response = restTemplate.getForEntity(
+                "http://localhost:" + port + "/actuator/health",
+                String.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody()).contains("\"status\":\"UP\"");
+    }
+
+    @Test
+    @Order(21)
+    @DisplayName("GET /actuator/metrics returns metrics payload")
+    void testActuatorMetricsEndpoint() {
+        ResponseEntity<String> response = restTemplate.getForEntity(
+                "http://localhost:" + port + "/actuator/metrics",
+                String.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody()).contains("\"names\"");
+    }
+
+    @Test
+    @Order(22)
+    @DisplayName("POST /compare with Accept application/xml returns XML")
+    void testContentNegotiationXml() {
+        QuantityInputDTO body = input(1.0, "FEET", "LengthUnit", 12.0, "INCHES", "LengthUnit");
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(List.of(MediaType.APPLICATION_XML));
+
+        ResponseEntity<String> response = restTemplate.exchange(
+                baseUrl() + "/compare",
+                HttpMethod.POST,
+                new HttpEntity<>(body, headers),
+                String.class);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getHeaders().getContentType()).isNotNull();
+        assertThat(response.getHeaders().getContentType().toString()).contains("xml");
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody()).contains("<resultString>true</resultString>");
+    }
+
+    @Test
+    @Order(23)
+    @DisplayName("GET /h2-console is reachable in development profile")
+    void testH2ConsoleLoads() {
+        ResponseEntity<String> response = restTemplate.getForEntity(
+                "http://localhost:" + port + "/h2-console",
+                String.class);
+
+        assertThat(response.getStatusCode().is2xxSuccessful() || response.getStatusCode().is3xxRedirection()).isTrue();
     }
 }
