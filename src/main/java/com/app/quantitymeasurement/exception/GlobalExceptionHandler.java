@@ -7,6 +7,7 @@ import java.util.logging.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.ObjectError;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -55,6 +56,40 @@ public class GlobalExceptionHandler {
         logger.warning("Handling QuantityMeasurementException: " + ex.getMessage() +
                 " for request path: " + error.path);
         return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(UserManagementException.class)
+    public ResponseEntity<ErrorResponse> handleUserManagementException(
+            UserManagementException ex,
+            WebRequest request) {
+
+        ErrorResponse error = new ErrorResponse();
+        error.timestamp = LocalDateTime.now();
+        error.status = ex.getStatus().value();
+        error.error = ex.getStatus().getReasonPhrase();
+        error.message = ex.getMessage();
+        error.path = request.getDescription(false).replace("uri=", "");
+
+        logger.warning("Handling UserManagementException: " + ex.getMessage() +
+                " for request path: " + error.path);
+        return new ResponseEntity<>(error, ex.getStatus());
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAccessDeniedException(
+            AccessDeniedException ex,
+            WebRequest request) {
+
+        ErrorResponse error = new ErrorResponse();
+        error.timestamp = LocalDateTime.now();
+        error.status = HttpStatus.FORBIDDEN.value();
+        error.error = "Forbidden";
+        error.message = ex.getMessage();
+        error.path = request.getDescription(false).replace("uri=", "");
+
+        logger.warning("Handling AccessDeniedException: " + ex.getMessage() +
+                " for request path: " + error.path);
+        return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
     }
 
     @ExceptionHandler(Exception.class)
