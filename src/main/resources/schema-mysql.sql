@@ -1,3 +1,20 @@
+CREATE TABLE IF NOT EXISTS app_user (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    email VARCHAR(190) NOT NULL,
+    password_hash VARCHAR(255) NULL,
+    full_name VARCHAR(255) NOT NULL,
+    provider VARCHAR(20) NOT NULL,
+    provider_id VARCHAR(255) NULL,
+    role VARCHAR(20) NOT NULL,
+    enabled TINYINT(1) NOT NULL DEFAULT 1,
+    created_at DATETIME(6) NOT NULL,
+    updated_at DATETIME(6) NOT NULL,
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_app_user_email (email),
+    INDEX idx_app_user_email (email),
+    INDEX idx_app_user_role (role)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 CREATE TABLE IF NOT EXISTS quantity_measurement_entity (
     id BIGINT NOT NULL AUTO_INCREMENT,
     this_value DOUBLE NOT NULL,
