@@ -17,10 +17,10 @@ import org.springframework.stereotype.Service;
 @Service
 public class JwtService {
 
-    @Value("${app.security.jwt.secret}")
+    @Value("${app.security.jwt.secret:VGhpc0lzQVNlY3JldEtleUZvclF1YW50aXR5TWVhc3VyZW1lbnRBcHBBcGlKV1QxMjM0NTY3OA==}")
     private String jwtSecret;
 
-    @Value("${app.security.jwt.access-token-expiration-ms}")
+    @Value("${app.security.jwt.access-token-expiration-ms:3600000}")
     private long accessTokenExpirationMs;
 
     public String extractUsername(String token) {
