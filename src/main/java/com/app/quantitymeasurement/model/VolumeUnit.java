@@ -2,9 +2,9 @@ package com.app.quantitymeasurement.model;
 
 public enum VolumeUnit implements IMeasurable {
 
-	LITRE(1),
+	LITRE(1.0),
 	MILLILITER(0.001),
-	GALLON(3.785);
+	GALLON(3.78541);
 
 	private final double factor;
 

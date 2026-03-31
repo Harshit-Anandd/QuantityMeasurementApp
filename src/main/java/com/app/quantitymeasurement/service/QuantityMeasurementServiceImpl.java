@@ -39,10 +39,25 @@ public class QuantityMeasurementServiceImpl implements IQuantityMeasurementServi
             Quantity<IMeasurable> thisQuantityModel = convertDtoToModel(thisQ);
             Quantity<IMeasurable> thatQuantityModel = convertDtoToModel(thatQ);
 
-            boolean result = Math.abs(thisQuantityModel.toBase() - thatQuantityModel.toBase()) < EPSILON;
+            double thisBase = thisQuantityModel.toBase();
+            double thatBase = thatQuantityModel.toBase();
+
+            String comparisonSymbol;
+            if (Math.abs(thisBase - thatBase) < EPSILON) {
+                comparisonSymbol = "=";
+            } else if (thisBase > thatBase) {
+                comparisonSymbol = ">";
+            } else {
+                comparisonSymbol = "<";
+            }
+
+            String resultString = String.format("%.4g %s %s %.4g %s",
+                thisQ.value, thisQ.unit,
+                comparisonSymbol,
+                thatQ.value, thatQ.unit);
 
             QuantityMeasurementEntity entity = createBaseEntity(thisQ, thatQ, OperationType.COMPARE);
-            entity.resultString = Boolean.toString(result);
+            entity.resultString = resultString;
 
             logger.info("Service operation completed: compare");
             return saveAndReturn(entity);
