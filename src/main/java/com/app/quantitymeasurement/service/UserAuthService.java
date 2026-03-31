@@ -95,6 +95,15 @@ public class UserAuthService {
             user.fullName = normalizedEmail;
         }
 
+        // SECURITY: Validate provider ID matches if user exists and is Google-authenticated
+        if (user.id != null && user.provider == AuthProvider.GOOGLE) {
+            if (user.providerId != null && !user.providerId.equals(providerId)) {
+                throw new UserManagementException(
+                        "Email registered with different Google account. Please login with the correct account.",
+                        HttpStatus.FORBIDDEN);
+            }
+        }
+
         if (user.provider == AuthProvider.GOOGLE || user.provider == null) {
             user.provider = AuthProvider.GOOGLE;
             user.providerId = providerId;
