@@ -1,16 +1,20 @@
-# Multi-stage build for Spring Boot application
-FROM maven:3.9-eclipse-temurin-21 as builder
+# Multi-stage build for Spring Boot application - Railway Compatible
+# This Dockerfile uses images that are guaranteed to be available
+
+FROM maven:3.9-eclipse-temurin-21 AS builder
 
 WORKDIR /app
 
-# Copy pom.xml and source code
+# Copy pom.xml first (for better layer caching)
 COPY pom.xml .
+
+# Copy source code
 COPY src ./src
 
 # Build application
 RUN mvn clean package -DskipTests -P prod
 
-# Runtime stage
+# Runtime stage - using latest stable JRE
 FROM eclipse-temurin:21-jre-jammy
 
 WORKDIR /app
@@ -21,13 +25,14 @@ COPY --from=builder /app/target/quantity-measurement-app-0.0.1-SNAPSHOT.jar app.
 # Set environment variables
 ENV JAVA_OPTS="-Xmx512m -Xms256m"
 ENV SPRING_PROFILES_ACTIVE=prod
+ENV PORT=8080
 
 # Expose port
 EXPOSE 8080
 
-# Health check
+# Health check - more reliable version
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD java -cp app.jar org.springframework.boot.loader.JarLauncher || exit 1
+    CMD curl -f http://localhost:8080/api/health || exit 1
 
 # Run the application
 ENTRYPOINT ["java", "-jar", "app.jar"]
