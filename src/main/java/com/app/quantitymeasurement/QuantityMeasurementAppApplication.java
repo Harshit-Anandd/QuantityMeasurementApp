@@ -17,7 +17,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
                 description = "REST API for quantity measurement operations"
         ),
         security = @SecurityRequirement(name = "bearerAuth"),
-        servers = @Server(url = "http://localhost:8080", description = "Generated server url")
+        servers = @Server(url = "quantitymeasurementapp-production-b5f5.up.railway.app", description = "Generated server url")
 )
 @SecurityScheme(
         name = "bearerAuth",
