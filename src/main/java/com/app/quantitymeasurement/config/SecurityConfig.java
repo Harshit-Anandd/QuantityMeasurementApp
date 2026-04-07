@@ -4,7 +4,11 @@ import com.app.quantitymeasurement.security.JwtAuthenticationFilter;
 import com.app.quantitymeasurement.security.OAuth2AuthenticationFailureHandler;
 import com.app.quantitymeasurement.security.OAuth2AuthenticationSuccessHandler;
 import com.app.quantitymeasurement.security.RestAuthenticationEntryPoint;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -34,6 +38,12 @@ public class SecurityConfig {
     private final OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler;
     private final RestAuthenticationEntryPoint restAuthenticationEntryPoint;
 
+    @Value("${app.cors.allowed-origins:http://localhost:3000,http://localhost:5173}")
+    private String configuredAllowedOrigins;
+
+    @Value("${app.cors.allowed-origin-patterns:}")
+    private String configuredAllowedOriginPatterns;
+
     public SecurityConfig(
             JwtAuthenticationFilter jwtAuthenticationFilter,
             OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler,
@@ -57,6 +67,8 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.ALWAYS))
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(authenticationEntryPoint()))
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.OPTIONS, "/**")
+                        .permitAll()
                         .requestMatchers(
                                 "/api/v1/auth/**",
                                 "/oauth2/**",
@@ -104,15 +116,8 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // Get allowed origins from environment variable or use defaults for local development
-        String allowedOriginsEnv = System.getenv("CORS_ALLOWED_ORIGINS");
-        java.util.List<String> allowedOrigins;
-
-        if (allowedOriginsEnv != null && !allowedOriginsEnv.isEmpty()) {
-            // Production: origins from environment variable (comma-separated)
-            allowedOrigins = Arrays.asList(allowedOriginsEnv.split(","));
-        } else {
-            // Development: default localhost origins
+        List<String> allowedOrigins = parseCsv(configuredAllowedOrigins);
+        if (allowedOrigins.isEmpty()) {
             allowedOrigins = Arrays.asList(
                     "http://localhost:3000",
                     "http://localhost:5173",
@@ -122,15 +127,41 @@ public class SecurityConfig {
                     "http://localhost:8080");
         }
 
+        List<String> allowedOriginPatterns = parseCsv(configuredAllowedOriginPatterns);
+
         configuration.setAllowedOrigins(allowedOrigins);
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        if (!allowedOriginPatterns.isEmpty()) {
+            configuration.setAllowedOriginPatterns(allowedOriginPatterns);
+        }
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
+        configuration.setExposedHeaders(Arrays.asList("Authorization", "Content-Type"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
+    }
+
+    private List<String> parseCsv(String csv) {
+        if (csv == null || csv.isBlank()) {
+            return new ArrayList<>();
+        }
+
+        return Arrays.stream(csv.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .map(this::normalizeOrigin)
+                .distinct()
+                .collect(Collectors.toList());
+    }
+
+    private String normalizeOrigin(String origin) {
+        if (origin.endsWith("/")) {
+            return origin.substring(0, origin.length() - 1);
+        }
+        return origin;
     }
 
     @Bean
